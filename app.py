@@ -106,28 +106,33 @@ def getAllUsers(authUser):
         return Utils.ErrorResponse('Someting went wrong.')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
-    try:
-        reqBody = request.get_json()
-        if 'email' not in reqBody:
-            return Utils.BadRequestResponse('email is required.')
-        if 'password' not in reqBody:
-            return Utils.BadRequestResponse('password is required.')
+    error = None
+    print("REQ BODY ... ", request.form)
+    if request.method == 'POST':
+        try:
+            reqBody = request.get_json()
+            print("HERE")
+            if 'email' not in reqBody:
+                return Utils.BadRequestResponse('email is required.')
+            if 'password' not in reqBody:
+                return Utils.BadRequestResponse('password is required.')
 
-        user = User.UserExists({'email': reqBody['email'], 'password': reqBody['password']})
-        print(user)
-        if not user:
-            return Utils.UnauthorizedResponse('Invalid credentials.')
-        else:
-            data = {"_id": str(user["_id"]), "email": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]}
-            token = jwt.encode({'_id': data["_id"], 'exp': datetime.datetime.utcnow(
-            ) + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
-            response = make_response(jsonify({"data": data, "message": "Logged in successfully", "success": True, "token": token}), 200)
-            return response
-    except Exception as e:
-        return Utils.ErrorResponse('Someting went wrong.')
-
+            user = User.UserExists({'email': reqBody['email'], 'password': reqBody['password']})
+            print(user)
+            if not user:
+                error = "Invalid credentials. Please try again."
+                return Utils.UnauthorizedResponse('Invalid credentials.')
+            else:
+                data = {"_id": str(user["_id"]), "email": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]}
+                token = jwt.encode({'_id': data["_id"], 'exp': datetime.datetime.utcnow(
+                ) + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
+                response = make_response(jsonify({"data": data, "message": "Logged in successfully", "success": True, "token": token}), 200)
+                return response
+        except Exception as e:
+            return Utils.ErrorResponse('Someting went wrong.')
+    return render_template("login.html", error=error)
 
 @app.route('/user', methods=['DELETE'])
 @token_required

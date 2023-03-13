@@ -4,3 +4,4 @@ datetime
 uuid
 pymongo
 apscheduler
+snscrape
