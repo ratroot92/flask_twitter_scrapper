@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, render_template, redirect, request, make_response
+from flask import Flask, session, jsonify, render_template, redirect, request, make_response
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -45,8 +45,10 @@ def token_required(f):
         if not token:
             return Utils.UnauthorizedResponse('Missing access token.')
         try:
-            tokenPayload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            authUser = db.users.find_one({'_id': ObjectId(tokenPayload['_id'])})
+            tokenPayload = jwt.decode(
+                token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            authUser = db.users.find_one(
+                {'_id': ObjectId(tokenPayload['_id'])})
             if authUser:
                 authUser['_id'] = str(authUser['_id'])
                 return f(authUser, *args, **kwargs)
@@ -106,10 +108,11 @@ def getAllUsers(authUser):
         return Utils.ErrorResponse('Someting went wrong.')
 
 
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     print("REQ BODY ... ", request.form)
+    print("REQUEST ... ", request.headers)
     if request.method == 'POST':
         try:
             reqBody = request.get_json()
@@ -119,20 +122,24 @@ def login():
             if 'password' not in reqBody:
                 return Utils.BadRequestResponse('password is required.')
 
-            user = User.UserExists({'email': reqBody['email'], 'password': reqBody['password']})
+            user = User.UserExists(
+                {'email': reqBody['email'], 'password': reqBody['password']})
             print(user)
             if not user:
                 error = "Invalid credentials. Please try again."
                 return Utils.UnauthorizedResponse('Invalid credentials.')
             else:
-                data = {"_id": str(user["_id"]), "email": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]}
+                data = {"_id": str(user["_id"]), "email": user["username"], "firstName": user["firstName"],
+                        "lastName": user["lastName"], "email": user["email"]}
                 token = jwt.encode({'_id': data["_id"], 'exp': datetime.datetime.utcnow(
                 ) + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
-                response = make_response(jsonify({"data": data, "message": "Logged in successfully", "success": True, "token": token}), 200)
+                response = make_response(jsonify(
+                    {"data": data, "message": "Logged in successfully", "success": True, "token": token}), 200)
                 return response
         except Exception as e:
             return Utils.ErrorResponse('Someting went wrong.')
     return render_template("login.html", error=error)
+
 
 @app.route('/user', methods=['DELETE'])
 @token_required
@@ -193,7 +200,8 @@ def setUserTargets(authUser):
 
         exist = Target.TargetExist(reqBody)
         if not exist:
-            target = Target(targetType=reqBody["targetType"], targets=reqBody["targets"], limit=reqBody['limit'], user=authUser['_id'])
+            target = Target(
+                targetType=reqBody["targetType"], targets=reqBody["targets"], limit=reqBody['limit'], user=authUser['_id'])
             target = db.targets.insert_one(target.toDictionary())
             target = db.targets.find_one({'_id': target.inserted_id})
             target['_id'] = str(target['_id'])
@@ -202,7 +210,8 @@ def setUserTargets(authUser):
             heavyTask.start()
             return Utils.SuccessResponse(target, "Target created successfully")
         else:
-            response = Utils.NotFoundResponse(exist, "Target Type '" + reqBody["targetType"]+"' already exists.")
+            response = Utils.NotFoundResponse(
+                exist, "Target Type '" + reqBody["targetType"]+"' already exists.")
             return response
 
     except Exception as e:
@@ -210,11 +219,12 @@ def setUserTargets(authUser):
 
 
 @app.route('/user/targets/keywords', methods=['GET'])
-@token_required
-def getUserTargets(authUser):
+# @token_required
+def getUserTargets():
     try:
-        data = Target.GetUserTargets(authUser)
-        return Utils.SuccessResponse(data, "All user targets.")
+        # data = Target.GetUserTargets(authUser)
+        # return Utils.SuccessResponse(data, "All user targets.")
+        return render_template("dashboard.html")
     except Exception as e:
         return Utils.ErrorResponse('Someting went wrong.')
 
@@ -240,7 +250,8 @@ def updateUserTargets(authUser):
             return Utils.BadRequestResponse('maximum limit is 1000.')
         exist = Target.TargetExist(reqBody)
         if exist:
-            target = db.targets.update_one({'_id': ObjectId(exist['_id'])}, {"$set": {'targets': reqBody['targets'], 'tweets': [], 'limit': reqBody['limit'], 'status': 0}})
+            target = db.targets.update_one({'_id': ObjectId(exist['_id'])}, {"$set": {
+                                           'targets': reqBody['targets'], 'tweets': [], 'limit': reqBody['limit'], 'status': 0}})
             if target.matched_count > 0 and target.modified_count > 0:
                 target = db.targets.find_one({'_id': ObjectId(exist['_id'])})
                 target['_id'] = str(target['_id'])
@@ -262,9 +273,11 @@ def deleteUserTargets(authUser):
         if 'targetType' not in reqBody:
             return Utils.BadRequestResponse('targetType is required.')
         else:
-            userTarget = db.targets.find_one({'user': authUser['_id'], 'targetType': reqBody['targetType']})
+            userTarget = db.targets.find_one(
+                {'user': authUser['_id'], 'targetType': reqBody['targetType']})
             if userTarget:
-                result = db.targets.delete_one({'user': authUser['_id'], 'targetType': reqBody['targetType']})
+                result = db.targets.delete_one(
+                    {'user': authUser['_id'], 'targetType': reqBody['targetType']})
                 if result.deleted_count == 1:
                     return Utils.SuccessResponse(reqBody, 'Target deleted successfully.')
                 else:

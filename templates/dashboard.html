@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <!-- MDB -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.2.0/mdb.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous" />
+
+    <style>
+        .login-body {
+            padding: 50px;
+        }
+    </style>
+
+    <title>Dashboard Page</title>
+</head>
+
+<body>
+    <div class="container mx-auto">
+        <div class="row d-flex align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="login-body">
+                    <h1 class="text-center">Twitter Targets</h1>
+                    <br />
+
+                    <form id="twitter-target-form">
+                        <div class="form-group">
+                            <label for="target-type">Target Type:</label>
+                            <select class="form-control" id="target-type" name="target_type">
+                                <option value="twitter-hashtag">Twitter Hashtag</option>
+                                <option value="twitter-user">Twitter User</option>
+                                <option value="keywords">Keywords</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="targets">Targets:</label>
+                            <input type="text" class="form-control" id="targets" name="targets" />
+                            <small class="form-text text-muted">Please enter one target per line.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="limit">Limit:</label>
+                            <select class="form-control" id="limit" name="limit">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.2.0/mdb.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+        crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            $("#twitter-target-form").submit(function (event) {
+                event.preventDefault();
+                var formData = {
+                    targetType: $("#target-type").val(),
+                    targets: $("#targets").val().split("\n"),
+                    limit: $("#limit").val(),
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "/user/targets/keywords",
+                    headers: { 'x-access-token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI2NDBmNmU2NjJmNDI4YjRmMTliODM4NWYiLCJleHAiOjE2Nzg3NDI1Mjl9.hjxfTQyGSSs6llbfRJg8K2gvPSz41Yv5fPRcGD6eHH0" },
+                    data: JSON.stringify(formData),
+                    contentType: "application/json",
+                    success: function (response) {
+                        console.log(response);
+                        // handle success response
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        // handle error response
+                    },
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
