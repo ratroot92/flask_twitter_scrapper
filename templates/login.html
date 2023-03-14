@@ -49,7 +49,7 @@
             <h1 class="text-center">Login</h1>
             <br />
 
-            <form id="login-form">
+            <form id="login-form"  method="POST" action="/login">
               <!-- Email input -->
               <div class="form-outline mb-4">
                 <input
@@ -146,7 +146,7 @@
       integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
       crossorigin="anonymous"
     ></script>
-    <script>
+    <!-- <script>
       $(document).ready(function () {
         $("#login-form").submit(function (event) {
           event.preventDefault(); // prevent the form from submitting normally
@@ -167,7 +167,7 @@
               //   headers: { "x-access-tokens": response.token },
               // });
               // Redirect to another page
-              window.location.replace("/user/targets/keywords");
+              window.location.replace("/user/target/keywords");
             },
             error: function (error) {
               console.log(error);
@@ -175,6 +175,6 @@
           });
         });
       });
-    </script>
+    </script> -->
   </body>
 </html>

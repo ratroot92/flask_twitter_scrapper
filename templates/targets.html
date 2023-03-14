@@ -1,0 +1,39 @@
+
+
+
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Target Type</th>
+            <th scope="col">Target Keywords</th>
+            <th scope="col">Limit</th>
+            <th scope="col">View</th>
+            <th scope="col">Delete</th>
+
+          </tr>
+        </thead>
+        <tbody>
+            {% if context['targets'] %}
+            {% for target in context['targets'] %}
+            <tr>
+
+                <th scope="row">{{loop.index}}</th>
+                <td>{{ target['targetType'] }}</td>
+                <td>{{ target['targets'] }}</td>
+                <td>{{ target['limit'] }}</td>
+                <td><a href="/user/target/:_id"><a>Click</a></td>
+                <td><a href="/user/target/:_id"><a>Delete</a></td>
+
+        </tr>
+
+            {% endfor %}
+    {% endif %}
+
+
+         
+           
+      
+         
+        </tbody>
+      </table>

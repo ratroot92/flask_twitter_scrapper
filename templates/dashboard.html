@@ -27,17 +27,52 @@
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+          <a class="navbar-brand" href="#">Twiiter Engine</a>
+          <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item active">
+              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/target">User Targets</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Disabled</a>
+            </li>
+          </ul>
+
+
+
+
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <a href="/logout" class="btn btn-outline-danger my-2 my-sm-0" type="button">Logout</a>
+          </form>
+        </div>
+      </nav>
     <div class="container mx-auto">
         <div class="row d-flex align-items-center justify-content-center">
             <div class="col-md-6">
                 <div class="login-body">
                     <h1 class="text-center">Twitter Targets</h1>
                     <br />
-
-                    <form id="twitter-target-form">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class="messages">
+                            {% for message in messages %}
+                                <li class="text-danger">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+                    <form id="twitter-target-form" method="POST" action="/user/target/keywords">
                         <div class="form-group">
-                            <label for="target-type">Target Type:</label>
-                            <select class="form-control" id="target-type" name="target_type">
+                            <label for="targetType">Target Type:</label>
+                            <select class="form-control" id="targetType" name="targetType">
                                 <option value="twitter-hashtag">Twitter Hashtag</option>
                                 <option value="twitter-user">Twitter User</option>
                                 <option value="keywords">Keywords</option>
@@ -69,18 +104,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
         crossorigin="anonymous"></script>
-    <script>
+    <!-- <script>
         $(document).ready(function () {
             $("#twitter-target-form").submit(function (event) {
                 event.preventDefault();
                 var formData = {
-                    targetType: $("#target-type").val(),
+                    targetType: $("#targetType").val(),
                     targets: $("#targets").val().split("\n"),
                     limit: $("#limit").val(),
                 };
                 $.ajax({
                     type: "POST",
-                    url: "/user/targets/keywords",
+                    url: "/user/target/keywords",
                     headers: { 'x-access-token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI2NDBmNmU2NjJmNDI4YjRmMTliODM4NWYiLCJleHAiOjE2Nzg3NDI1Mjl9.hjxfTQyGSSs6llbfRJg8K2gvPSz41Yv5fPRcGD6eHH0" },
                     data: JSON.stringify(formData),
                     contentType: "application/json",
@@ -95,7 +130,7 @@
                 });
             });
         });
-    </script>
+    </script> -->
 </body>
 
 </html>
