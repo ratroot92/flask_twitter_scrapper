@@ -93,24 +93,28 @@ def allUserTargets():
 
 
 
-@app.route('/user/target/view/:_id', methods=['GET'])
-def viewUserTarget():
+@app.route('/user/target/view/<targetId>', methods=['GET'])
+def viewUserTarget(targetId):
     userId=session.get('userId') # type: ignore
-    if userId:
-        targets=db.targets.find({'user':ObjectId(userId)})
-        context={'targets':targets}
-        return render_template('targets.html',context=context)
+    user=db.users.find_one({'_id':ObjectId(userId)})
+    if targetId and user:
+        target=db.targets.find_one({'_id':ObjectId(targetId)})
+        if target:
+            context={'target':target}
+            return render_template('detail.html',context=context)
 
 
 
-@app.route('/user/target/delete/:_id', methods=['GET'])
-def deleteUserTarget():
+@app.route('/user/target/delete/<targetId>', methods=['GET'])
+def deleteUserTarget(targetId):
     userId=session.get('userId') # type: ignore
-    if userId:
-        targets=db.targets.find({'user':ObjectId(userId)})
-        context={'targets':targets}
-        return render_template('targets.html',context=context)
- 
+    user=db.users.find_one({'_id':ObjectId(userId)})
+    if targetId and user:
+        result=db.targets.delete_one({'_id':ObjectId(targetId)})
+        if result.deleted_count == 1:
+            flash('Target deleted successfully.')
+            return redirect('/user/target')
+
 
 
 @app.route('/login', methods=['POST'])

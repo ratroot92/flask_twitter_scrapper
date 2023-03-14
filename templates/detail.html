@@ -1,0 +1,10 @@
+{% if context['target'] %}
+<p>Target Type : {{context['target']['targetType']}}</p>
+<p>Targets : {{context['target']['targets']}}</p>
+<p>Limit : {{context['target']['limit']}}</p>
+
+{% for target in context['target']['tweets'] %}
+
+{% endfor %}
+{% endif %}
+

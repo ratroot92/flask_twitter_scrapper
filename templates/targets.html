@@ -22,8 +22,8 @@
                 <td>{{ target['targetType'] }}</td>
                 <td>{{ target['targets'] }}</td>
                 <td>{{ target['limit'] }}</td>
-                <td><a href="/user/target/:_id"><a>Click</a></td>
-                <td><a href="/user/target/:_id"><a>Delete</a></td>
+                <td><a class="btn btn-sm btn-success" type="button" href="{{url_for('viewUserTarget',targetId=target['_id'])}}"><a>Click</td>
+                <td><a class="btn btn-sm btn-success" type="button" href="{{url_for('deleteUserTarget',targetId=target['_id'])}}"><a>Delete</td>
 
         </tr>
 
