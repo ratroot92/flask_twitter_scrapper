@@ -1,39 +1,43 @@
+{% extends 'layout.html' %}
 
+{% block main %}
+<div class="container mx-auto">
+  <div class="row d-flex align-items-center justify-content-center">
+    <div class="col-md-10">
+      <div class="twitter-data-body" style="padding-top: 30px">
+        <h2 class="text-center">Twitter Data</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Target Type</th>
+              <th scope="col">Target Keywords</th>
+              <th scope="col">Limit</th>
+              <th scope="col">View</th>
+              <th scope="col">Delete</th>
 
-
-    <table class="table table-striped">
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Target Type</th>
-            <th scope="col">Target Keywords</th>
-            <th scope="col">Limit</th>
-            <th scope="col">View</th>
-            <th scope="col">Delete</th>
-
-          </tr>
-        </thead>
-        <tbody>
+            </tr>
+          </thead>
+          <tbody>
             {% if context['targets'] %}
             {% for target in context['targets'] %}
             <tr>
-
-                <th scope="row">{{loop.index}}</th>
-                <td>{{ target['targetType'] }}</td>
-                <td>{{ target['targets'] }}</td>
-                <td>{{ target['limit'] }}</td>
-                <td><a class="btn btn-sm btn-success" type="button" href="{{url_for('viewUserTarget',targetId=target['_id'])}}"><a>Click</td>
-                <td><a class="btn btn-sm btn-success" type="button" href="{{url_for('deleteUserTarget',targetId=target['_id'])}}"><a>Delete</td>
-
-        </tr>
-
+              <th scope="row">{{loop.index}}</th>
+              <td>{{ target['targetType'] }}</td>
+              <td>{{ target['targets'] }}</td>
+              <td>{{ target['limit'] }}</td>
+              <td><a class="btn btn-sm btn-outline-success" type="button"
+                  href="{{url_for('viewUserTarget',targetId=target['_id'])}}"><i class="fas fa-eye"></i><a></td>
+              <td><a class="btn btn-sm btn-outline-danger" type="button"
+                  href="{{url_for('deleteUserTarget',targetId=target['_id'])}}"><i class="fas fa-trash"></i><a></td>
+            </tr>
             {% endfor %}
-    {% endif %}
+            {% endif %}
 
-
-         
-           
-      
-         
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

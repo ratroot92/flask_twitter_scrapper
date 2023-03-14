@@ -63,7 +63,9 @@ def __repr__(self):
 def getLoginPage():
     return render_template('login.html')
 
-
+@app.route('/register',methods=['GET'])
+def getRegister():
+    return render_template('register.html')
 
 @app.route('/dashboard', methods=['GET'])
 def getDashboardPage():
