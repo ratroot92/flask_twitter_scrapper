@@ -5,3 +5,6 @@ uuid
 pymongo
 apscheduler
 snscrape
+flask_login
+flask_wtf
+flask_bcrypt

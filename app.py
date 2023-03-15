@@ -27,11 +27,6 @@ import os
 
 def worker():
     try:
-        # snsScrapper = sntwitter.TwitterSearchScraper('fire')
-        # for counter, tweet in enumerate(snsScrapper.get_items()):
-        #     if counter > 10:
-        #         break
-        #     print(tweet.rawContent)
         targets = db.targets.find({})
         for target in targets:
             # if target['status'] == 0:
@@ -46,7 +41,7 @@ def worker():
 
 def activateTaskScheduler():
     scheduler = BackgroundScheduler(daemon=True)
-    scheduler.add_job(func=worker, trigger='interval', seconds=30)
+    scheduler.add_job(func=worker, trigger='interval', seconds=60)
     scheduler.start()
     print(" >>> Scheduler started")
 
@@ -62,30 +57,22 @@ class MyFlaskApp(Flask):
 app = MyFlaskApp(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = '004f2af45d3a4e161a7dd2d17fdae47f'
+
+
 # if __name__ == '__main__':
 app.run()
-
-# def auth_middleware(app):
-#     @app.before_request
-#     def check_auth():
-#         if not session.get('is_authenticated'): # type: ignore
-#             # return redirect(url_for('getLoginPage'))
-#             pass
 
 
 def __repr__(self):
     return '<Name %r>' % self.id
 
 
-# @app.before_request
-# @app.route('/login', methods=['GET'])
-# def getLoginPage():
-#     return render_template('login.html')
-
-
 @app.route('/login', methods=['GET'])
 def getLoginPage():
+    print(">>>>>>>>>>>>>>>>>>>>>>>")
+    # session['isAuthenticated'] = True
     return render_template('login.html')
+    # return redirect(url_for('/dashboard'))
 
 
 @app.route('/register', methods=['GET'])
@@ -146,7 +133,7 @@ def userLogin():
     if email and password:
         user = db.users.find_one({'email': email, 'password': password})
         if user:
-            session['is_authenticated'] = True
+            session['isAuthenticated'] = True
             session['userId'] = str(user['_id'])
             context = {'user': user}
             return render_template('dashboard.html', context=context)
@@ -162,6 +149,14 @@ def addUserTarget():
     try:
         targetType = request.form['targetType']  # type: ignore
         targets = request.form['targets']  # type: ignore
+        if not targets:
+            flash('Targets are required.')
+            return redirect('/dashboard')
+
+        if not limit:
+            flash('Limit are required.')
+            return redirect('/dashboard')
+
         limit = request.form['limit']  # type: ignore
         userId = ObjectId(session.get('userId'))  # type: ignore
         targets = targets.split(',')
