@@ -95,7 +95,14 @@ def getRegister():
 
 @app.route('/dashboard', methods=['GET'])
 def getDashboardPage():
-    return render_template('dashboard.html')
+    userId = session.get('userId')  # type: ignore
+    if userId:
+        targets = db.targets.find({'user': ObjectId(userId)})
+        context = {'targets': targets}
+        # return render_template('targets.html', context=context)
+        return render_template('dashboard.html', context=context)
+    else:
+        return render_template('dashboard.html', context={'targets': {}})
 
 
 @app.route('/', methods=['GET'])
@@ -153,7 +160,14 @@ def userLogin():
         else:
             flash('Invalid Credentials.')
             return redirect(url_for('getLoginPage'))
+    elif email == "":
+        flash("Email is required")
+        return redirect(url_for('getLoginPage'))
+    elif password == "":
+        flash("Password is required")
+        return redirect(url_for('getLoginPage'))
     else:
+        flash("Credentials are invalid")
         return redirect(url_for('getLoginPage'))
 
 

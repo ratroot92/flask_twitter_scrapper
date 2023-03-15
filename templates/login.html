@@ -35,6 +35,7 @@
     <style>
       .login-body {
         padding: 50px;
+        padding-top: 180px;
       }
     </style>
 
@@ -49,12 +50,19 @@
             <h1 class="text-center">Login</h1>
             <br />
 
-            {% with messages = get_flashed_messages() %} {% if messages %}
+            <!-- {% with messages = get_flashed_messages() %} {% if messages %}
             <ul class="messages">
               {% for message in messages %}
               <li class="text-success">{{ message }}</li>
               {% endfor %}
             </ul>
+            {% endif %} {% endwith %} -->
+            {% with messages = get_flashed_messages() %} {% if messages %}
+            <div class="alert alert-primary" role="alert">
+              {% for message in messages %}
+              <div>{{ message }}</div>
+              {% endfor %}
+            </div>
             {% endif %} {% endwith %}
             <form id="login-form" method="POST" action="/login">
               <!-- Email input -->
