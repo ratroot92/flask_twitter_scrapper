@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, session, jsonify, render_template, redirect, request, make_response,session,redirect, url_for, request, abort,flash
+from flask import Flask, session, jsonify, render_template, redirect, request, make_response, session, redirect, url_for, request, abort, flash
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -21,14 +21,23 @@ from multiprocessing import Process
 from utils.util import Utils
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
-
 from jwt.exceptions import ExpiredSignatureError
-# Github Token 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
-# Github user ratroot92
 
-        
+from flask_script import Manager, Server
 
-        
+
+def do_something():
+    print('MyFlaskApp is starting up!')
+
+
+class MyFlaskApp(Flask):
+    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+        if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+            with self.app_context():
+                do_something()
+        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+
+
 app = Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = '004f2af45d3a4e161a7dd2d17fdae47f'
@@ -42,15 +51,8 @@ app.config['SECRET_KEY'] = '004f2af45d3a4e161a7dd2d17fdae47f'
 #             pass
 
 
-
-
-
-
-
 def __repr__(self):
     return '<Name %r>' % self.id
-
-
 
 
 # @app.before_request
@@ -59,112 +61,103 @@ def __repr__(self):
 #     return render_template('login.html')
 
 
-@app.route('/login',methods=['GET'])
+@app.route('/login', methods=['GET'])
 def getLoginPage():
     return render_template('login.html')
 
-@app.route('/register',methods=['GET'])
+
+@app.route('/register', methods=['GET'])
 def getRegister():
     return render_template('register.html')
+
 
 @app.route('/dashboard', methods=['GET'])
 def getDashboardPage():
     return render_template('dashboard.html')
 
 
-
 @app.route('/', methods=['GET'])
 def getHomePage():
     return render_template('index.html')
- 
+
 
 @app.route('/logout', methods=['GET'])
 def logoutUser():
     return redirect('/login')
- 
 
 
 @app.route('/user/target', methods=['GET'])
 def allUserTargets():
-    userId=session.get('userId') # type: ignore
+    userId = session.get('userId')  # type: ignore
     if userId:
-        targets=db.targets.find({'user':ObjectId(userId)})
-        context={'targets':targets}
-        return render_template('targets.html',context=context)
-
-
+        targets = db.targets.find({'user': ObjectId(userId)})
+        context = {'targets': targets}
+        return render_template('targets.html', context=context)
 
 
 @app.route('/user/target/view/<targetId>', methods=['GET'])
 def viewUserTarget(targetId):
-    userId=session.get('userId') # type: ignore
-    user=db.users.find_one({'_id':ObjectId(userId)})
+    userId = session.get('userId')  # type: ignore
+    user = db.users.find_one({'_id': ObjectId(userId)})
     if targetId and user:
-        target=db.targets.find_one({'_id':ObjectId(targetId)})
+        target = db.targets.find_one({'_id': ObjectId(targetId)})
         if target:
-            context={'target':target}
-            return render_template('detail.html',context=context)
-
+            context = {'target': target}
+            return render_template('detail.html', context=context)
 
 
 @app.route('/user/target/delete/<targetId>', methods=['GET'])
 def deleteUserTarget(targetId):
-    userId=session.get('userId') # type: ignore
-    user=db.users.find_one({'_id':ObjectId(userId)})
+    userId = session.get('userId')  # type: ignore
+    user = db.users.find_one({'_id': ObjectId(userId)})
     if targetId and user:
-        result=db.targets.delete_one({'_id':ObjectId(targetId)})
+        result = db.targets.delete_one({'_id': ObjectId(targetId)})
         if result.deleted_count == 1:
             flash('Target deleted successfully.')
             return redirect('/user/target')
 
 
-
 @app.route('/login', methods=['POST'])
 def userLogin():
-    email = request.form['email'] # type: ignore
-    password = request.form['password'] # type: ignore
+    email = request.form['email']  # type: ignore
+    password = request.form['password']  # type: ignore
     if email and password:
-        user=db.users.find_one({'email':email,'password':password})
+        user = db.users.find_one({'email': email, 'password': password})
         if user:
             session['is_authenticated'] = True
             session['userId'] = str(user['_id'])
-            context={'user':user}
-            return render_template('dashboard.html',context=context)
+            context = {'user': user}
+            return render_template('dashboard.html', context=context)
         else:
             return redirect(url_for('getLoginPage'))
     else:
         return redirect(url_for('getLoginPage'))
 
 
-
-
 @app.route('/user/target/keywords', methods=['POST'])
 def addUserTarget():
     try:
-        targetType = request.form['targetType'] # type: ignore
-        targets = request.form['targets']# type: ignore
-        limit = request.form['limit']# type: ignore
-        userId=ObjectId(session.get('userId')) # type: ignore
-        user=db.users.find_one({'_id':userId})
+        targetType = request.form['targetType']  # type: ignore
+        targets = request.form['targets']  # type: ignore
+        limit = request.form['limit']  # type: ignore
+        userId = ObjectId(session.get('userId'))  # type: ignore
+        user = db.users.find_one({'_id': userId})
         if targetType and targets and limit and user:
-            targetExist=db.targets.find_one({'targetType':targetType,'user':user['_id']})
+            targetExist = db.targets.find_one({'targetType': targetType, 'user': user['_id']})
             if not targetExist:
-                    target = Target(targetType=targetType, targets=targets, limit=limit, user=user['_id'])
-                    target = db.targets.insert_one(target.toDictionary())
-                    flash('Target created successfully!')
-                    return redirect('/dashboard')
+                target = Target(targetType=targetType, targets=targets, limit=limit, user=user['_id'])
+                target = db.targets.insert_one(target.toDictionary())
+                flash('Target created successfully!')
+                return redirect('/dashboard')
             else:
-                    flash('Target already exists')
-                    return redirect('/dashboard')
+                flash('Target already exists')
+                return redirect('/dashboard')
         else:
             flash('Something went wrong.')
             return redirect('/dashboard')
     except Exception as e:
-            flash(str(e))
-            return redirect('/dashboard')
-
- 
-
+        flash(str(e))
+        return redirect('/dashboard')
 
 
 # @app.route('/login', methods=['POST'])
@@ -231,11 +224,6 @@ def addUserTarget():
 #     except Exception as e:
 #         return Utils.ErrorResponse('Someting went wrong.')
 # # Define some heavy function
-
-
-# def scrapLater(exist):
-#     Scrapper.scrapKeywords(exist)
-#     print("Process Complete!!! for "+exist['_id']+" " + exist['targetType'])
 
 
 # @app.route('/user/target/keywords', methods=['POST'])
@@ -344,23 +332,6 @@ def addUserTarget():
 #         return Utils.ErrorResponse('Someting went wrong.')
 
 
-# def my_scheduler():
-#     targets = db.targets.find({})
-#     for target in targets:
-#         target['_id'] = str(target['_id'])
-#         scrapLater(target)
-
-
-# @app.before_first_request
-# def activate_scheduler():
-#     scheduler = BackgroundScheduler(daemon=True)
-#     scheduler.add_job(func=my_scheduler, trigger='interval', seconds=60)
-#     scheduler.start()
-#     print(" >>> Scheduler started")
-
-
-
-
 # @app.route('/user', methods=['POST'])
 # def createUser(authUser):
 #     try:
@@ -387,7 +358,6 @@ def addUserTarget():
 #     except Exception as e:
 #         return Utils.ErrorResponse('Someting went wrong.')
 
-
 # @app.route('/user', methods=['GET'])
 # def getAllUsers(authUser):
 #     try:
@@ -399,6 +369,27 @@ def addUserTarget():
 #         return Utils.SuccessResponse(data, "All users")
 #     except Exception as e:
 #         return Utils.ErrorResponse('Someting went wrong.')
+
+
+def scrapLater(exist):
+    Scrapper.scrapKeywords(exist)
+    print("Process Complete!!! for "+exist['_id']+" " + exist['targetType'])
+
+
+def my_scheduler():
+    targets = db.targets.find({})
+    for target in targets:
+        if target['status'] == 0:
+            target['_id'] = str(target['_id'])
+            scrapLater(target)
+
+
+@app.before_first_request
+def activate_scheduler():
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(func=my_scheduler, trigger='interval', seconds=60)
+    scheduler.start()
+    print(" >>> Scheduler started")
 
 
 if __name__ == '__main__':
