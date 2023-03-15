@@ -5,3 +5,4 @@ uuid
 pymongo
 apscheduler
 snscrape
+credentials.txt
