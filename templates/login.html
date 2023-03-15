@@ -49,6 +49,13 @@
             <h1 class="text-center">Login</h1>
             <br />
 
+            {% with messages = get_flashed_messages() %} {% if messages %}
+            <ul class="messages">
+              {% for message in messages %}
+              <li class="text-success">{{ message }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %} {% endwith %}
             <form id="login-form" method="POST" action="/login">
               <!-- Email input -->
               <div class="form-outline mb-4">
