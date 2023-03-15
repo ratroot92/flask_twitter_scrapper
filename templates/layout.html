@@ -237,32 +237,5 @@
         });
       });
     </script>
-    <!-- <script>
-        $(document).ready(function () {
-            $("#twitter-target-form").submit(function (event) {
-                event.preventDefault();
-                var formData = {
-                    targetType: $("#targetType").val(),
-                    targets: $("#targets").val().split("\n"),
-                    limit: $("#limit").val(),
-                };
-                $.ajax({
-                    type: "POST",
-                    url: "/user/target/keywords",
-                    headers: { 'x-access-token': "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI2NDBmNmU2NjJmNDI4YjRmMTliODM4NWYiLCJleHAiOjE2Nzg3NDI1Mjl9.hjxfTQyGSSs6llbfRJg8K2gvPSz41Yv5fPRcGD6eHH0" },
-                    data: JSON.stringify(formData),
-                    contentType: "application/json",
-                    success: function (response) {
-                        console.log(response);
-                        // handle success response
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(xhr.responseText);
-                        // handle error response
-                    },
-                });
-            });
-        });
-    </script> -->
   </body>
 </html>

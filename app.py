@@ -59,8 +59,34 @@ app.debug = True
 app.config['SECRET_KEY'] = '004f2af45d3a4e161a7dd2d17fdae47f'
 
 
+def protectedRoute(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        isAuthenticated = session.get('isAuthenticated')
+        userId = session.get('userId')
+        if isAuthenticated and userId:
+            return func(userId, *args, **kwargs)
+        else:
+            return redirect(url_for('login'))
+    return wrapper
+
+
+def privateRoute(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        isAuthenticated = session.get('isAuthenticated')
+        userId = session.get('userId')
+        if isAuthenticated and userId:
+            return redirect(url_for('getDashboardPage'))
+        else:
+            return func(*args, **kwargs)
+
+    return wrapper
+
+#     return wrapper
+
+
 # if __name__ == '__main__':
-app.run()
 
 
 def __repr__(self):
@@ -68,69 +94,9 @@ def __repr__(self):
 
 
 @app.route('/login', methods=['GET'])
-def getLoginPage():
-    print(">>>>>>>>>>>>>>>>>>>>>>>")
-    # session['isAuthenticated'] = True
+@privateRoute
+def login():
     return render_template('login.html')
-    # return redirect(url_for('/dashboard'))
-
-
-@app.route('/register', methods=['GET'])
-def getRegister():
-    return render_template('register.html')
-
-
-@app.route('/dashboard', methods=['GET'])
-def getDashboardPage():
-    userId = session.get('userId')  # type: ignore
-    if userId:
-        targets = db.targets.find({'user': ObjectId(userId)})
-        context = {'targets': targets}
-        # return render_template('targets.html', context=context)
-        return render_template('dashboard.html', context=context)
-    else:
-        return render_template('dashboard.html', context={'targets': {}})
-
-
-@app.route('/', methods=['GET'])
-def getHomePage():
-    return render_template('index.html')
-
-
-@app.route('/logout', methods=['GET'])
-def logoutUser():
-    return redirect('/login')
-
-
-@app.route('/user/target', methods=['GET'])
-def allUserTargets():
-    userId = session.get('userId')  # type: ignore
-    if userId:
-        targets = db.targets.find({'user': ObjectId(userId)})
-        context = {'targets': targets}
-        return render_template('targets.html', context=context)
-
-
-@app.route('/user/target/view/<targetId>', methods=['GET'])
-def viewUserTarget(targetId):
-    userId = session.get('userId')  # type: ignore
-    user = db.users.find_one({'_id': ObjectId(userId)})
-    if targetId and user:
-        target = db.targets.find_one({'_id': ObjectId(targetId)})
-        if target:
-            context = {'target': target}
-            return render_template('detail.html', context=context)
-
-
-@app.route('/user/target/delete/<targetId>', methods=['GET'])
-def deleteUserTarget(targetId):
-    userId = session.get('userId')  # type: ignore
-    user = db.users.find_one({'_id': ObjectId(userId)})
-    if targetId and user:
-        result = db.targets.delete_one({'_id': ObjectId(targetId)})
-        if result.deleted_count == 1:
-            flash('Target deleted successfully.')
-            return redirect('/user/target')
 
 
 @app.route('/login', methods=['POST'])
@@ -143,54 +109,98 @@ def userLogin():
             session['isAuthenticated'] = True
             session['userId'] = str(user['_id'])
             context = {'user': user}
-            return render_template('dashboard.html', context=context)
+            return redirect(url_for('getDashboardPage'))
         else:
             flash('Invalid Credentials.')
-            return redirect(url_for('getLoginPage'))
+            return redirect(url_for('login'))
     elif email == "":
         flash("Email is required")
-        return redirect(url_for('getLoginPage'))
+        return redirect(url_for('login'))
     elif password == "":
         flash("Password is required")
-        return redirect(url_for('getLoginPage'))
+        return redirect(url_for('login'))
     else:
         flash("Credentials are invalid")
-        return redirect(url_for('getLoginPage'))
+        return redirect(url_for('login'))
+
+
+@app.route('/dashboard', methods=['GET'])
+@protectedRoute
+def getDashboardPage(userId):
+    targets = db.targets.find({'user': ObjectId(userId)})
+    context = {'targets': targets}
+    return render_template('dashboard.html', context=context)
+
+
+@app.route('/register', methods=['GET'])
+def getRegister():
+    return render_template('register.html')
+
+
+@app.route('/', methods=['GET'])
+@protectedRoute
+def getHomePage():
+    return render_template('index.html')
+
+
+@app.route('/logout', methods=['GET'])
+def logoutUser():
+    session['isAuthenticated'] = False
+    session['userId'] = ''
+    return redirect(url_for('login'))
+
+
+@app.route('/user/target/view/<targetId>', methods=['GET'])
+@protectedRoute
+def viewUserTarget(userId, targetId):
+    if targetId:
+        target = db.targets.find_one({'_id': ObjectId(targetId)})
+        if target:
+            context = {'target': target}
+            return render_template('detail.html', context=context)
+    else:
+        flash('Target not found.')
+        return redirect('getDashboardPage')
+
+
+@app.route('/user/target/delete/<targetId>', methods=['GET'])
+@protectedRoute
+def deleteUserTarget(userId, targetId):
+    if targetId:
+        result = db.targets.delete_one({'_id': ObjectId(targetId)})
+        if result.deleted_count == 1:
+            flash('Target deleted successfully.')
+            return redirect(url_for('getDashboardPage'))
+    else:
+        flash('Target not found.')
+        return redirect('getDashboardPage')
 
 
 @app.route('/user/target/keywords', methods=['POST'])
-def addUserTarget():
+@protectedRoute
+def addUserTarget(userId):
     try:
         targetType = request.form['targetType']  # type: ignore
         targets = request.form['targets']  # type: ignore
+        limit = request.form['limit']
         if not targets:
             flash('Targets are required.')
-            return redirect('/dashboard')
-
+            return redirect(url_for('getDashboardPage'))
         if not limit:
             flash('Limit are required.')
-            return redirect('/dashboard')
-
-        limit = request.form['limit']  # type: ignore
-        userId = ObjectId(session.get('userId'))  # type: ignore
+            return redirect(url_for('getDashboardPage'))
         targets = targets.split(',')
         if (len(targets)):
             for target in targets:
                 target = target.strip()
-            user = db.users.find_one({'_id': userId})
-            if targetType and targets and limit and user:
-                targetExist = db.targets.find_one({'targetType': targetType, 'user': user['_id']})
-                if not targetExist:
-                    target = Target(targetType=targetType, targets=targets, limit=int(limit), user=user['_id'])
-                    target = db.targets.insert_one(target.toDictionary())
-                    flash('Target created successfully!')
-                    return redirect('/dashboard')
-                else:
-                    flash('Target already exists')
-                    return redirect('/dashboard')
-            else:
-                flash('Something went wrong.')
-                return redirect('/dashboard')
+            user = db.users.find_one({'_id': ObjectId(userId)})
+            target = Target(targetType=targetType, targets=targets, limit=int(limit), user=user['_id'])
+            target = db.targets.insert_one(target.toDictionary())
+            flash('Target created successfully!')
+            return redirect(url_for('getDashboardPage'))
     except Exception as e:
         flash(str(e))
-        return redirect('/dashboard')
+        return redirect(url_for('getDashboardPage'))
+
+
+app.run()
