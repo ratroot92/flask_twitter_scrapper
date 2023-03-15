@@ -1,0 +1,49 @@
+<!-- {% if context['target'] %}
+<p>Target Type : {{context['target']['targetType']}}</p>
+<p>Targets : {{context['target']['targets']}}</p>
+<p>Limit : {{context['target']['limit']}}</p>
+
+{% for target in context['target']['tweets'] %}
+
+{% endfor %}
+{% endif %}
+ -->
+
+{% extends 'layout.html' %} {% block main %}
+<div class="container my-4">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      {% if context['target'] %}
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Target Details</h4>
+          <p class="card-text">
+            Target Type: {{context['target']['targetType']}}
+          </p>
+          <p class="card-text">Targets: {{context['target']['targets']}}</p>
+          <p class="card-text">Limit: {{context['target']['limit']}}</p>
+        </div>
+      </div>
+
+      {% if context['target']['tweets'] %}
+      <div class="mt-4">
+        <h4>Tweets</h4>
+        {% for tweet in context['target']['tweets'] %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">{{ tweet['user']['name'] }}</h5>
+            <p class="card-text">{{ tweet['text'] }}</p>
+            <p class="card-text">
+              <small class="text-muted">{{ tweet['created_at'] }}</small>
+            </p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% else %}
+      <p>No target found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

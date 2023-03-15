@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div class="container mx-auto">
+  <div class="row d-flex align-items-center justify-content-center">
+    <div class="col-md-6">
+      <div class="login-body">
+        <h1 class="text-center">Twitter Targets</h1>
+        <br />
+        {% with messages = get_flashed_messages() %} {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+          <li class="text-success">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %} {% endwith %}
+        <form id="twitter-target-form" method="POST" action="/user/target/keywords">
+          <div class="form-group">
+            <label for="targetType">Target Type:</label>
+            <select class="form-control" id="targetType" name="targetType">
+              <option value="twitter-hashtag">Twitter Hashtag</option>
+              <option value="twitter-user">Twitter User</option>
+              <option value="keywords">Keywords</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="targets">Targets:</label>
+            <input type="text" class="form-control" id="targets" name="targets" />
+            <small class="form-text text-muted">Please enter one target per line.</small>
+          </div>
+          <div class="form-group">
+            <label for="limit">Limit:</label>
+            <select class="form-control" id="limit" name="limit">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
