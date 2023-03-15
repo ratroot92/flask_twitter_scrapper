@@ -23,19 +23,17 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from jwt.exceptions import ExpiredSignatureError
 
-from flask_script import Manager, Server
+
+# def do_something():
+#     print('MyFlaskApp is starting up!')
 
 
-def do_something():
-    print('MyFlaskApp is starting up!')
-
-
-class MyFlaskApp(Flask):
-    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-        if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
-            with self.app_context():
-                do_something()
-        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+# class MyFlaskApp(Flask):
+#     def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+#         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+#             with self.app_context():
+#                 do_something()
+#         super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
 
 
 app = Flask(__name__)
