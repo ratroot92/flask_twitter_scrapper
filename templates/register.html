@@ -49,17 +49,24 @@
             <h1 class="text-center">Register</h1>
             <br />
 
+            {% with messages = get_flashed_messages() %} {% if messages %}
+            <div class="alert alert-primary" role="alert">
+              {% for message in messages %}
+              <div>{{ message }}</div>
+              {% endfor %}
+            </div>
+            {% endif %} {% endwith %}
             <form id="register-form" method="POST" action="/register">
               <!-- First Name input -->
               <div class="form-outline mb-4">
                 <input
                   type="text"
                   placeholder="First Name"
-                  name="first_name"
-                  value="{{ request.first_name }}"
+                  name="firstName"
+                  value="{{ request.firstName }}"
                   class="form-control"
                 />
-                <label class="form-label" for="first_name">First Name</label>
+                <label class="form-label" for="firstName">First Name</label>
               </div>
 
               <!-- Last Name input -->
@@ -67,11 +74,11 @@
                 <input
                   type="text"
                   placeholder="Last Name"
-                  name="last_name"
-                  value="{{ request.last_name }}"
+                  name="lastName"
+                  value="{{ request.lastName }}"
                   class="form-control"
                 />
-                <label class="form-label" for="last_name">Last Name</label>
+                <label class="form-label" for="lastName">Last Name</label>
               </div>
 
               <!-- Username input -->
@@ -103,11 +110,11 @@
                 <input
                   type="password"
                   placeholder="Confirm Password"
-                  name="confirm_password"
-                  value="{{ request.confirm_password }}"
+                  name="confirmPassword"
+                  value="{{ request.confirmPassword }}"
                   class="form-control"
                 />
-                <label class="form-label" for="confirm_password"
+                <label class="form-label" for="confirmPassword"
                   >Confirm Password</label
                 >
               </div>
@@ -147,5 +154,35 @@
       integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
       crossorigin="anonymous"
     ></script>
+    <!-- <script>
+      $(document).ready(function () {
+        $("#login-form").submit(function (event) {
+          event.preventDefault(); // prevent the form from submitting normally
+          var formData = {
+            email: $("input[name=email]").val(),
+            password: $("input[name=password]").val(),
+          };
+          $.ajax({
+            type: "POST",
+            url: "/login",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function (response) {
+              console.log(response);
+              localStorage.setItem("token", response.token);
+              // Set x-access-tokens header for subsequent requests
+              // $.ajaxSetup({
+              //   headers: { "x-access-tokens": response.token },
+              // });
+              // Redirect to another page
+              window.location.replace("/user/target/keywords");
+            },
+            error: function (error) {
+              console.log(error);
+            },
+          });
+        });
+      });
+    </script> -->
   </body>
 </html>

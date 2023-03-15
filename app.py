@@ -71,7 +71,7 @@ def protectedRoute(func):
     return wrapper
 
 
-def privateRoute(func):
+def unprotectedRoute(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         isAuthenticated = session.get('isAuthenticated')
@@ -94,7 +94,7 @@ def __repr__(self):
 
 
 @app.route('/login', methods=['GET'])
-@privateRoute
+@unprotectedRoute
 def login():
     return render_template('login.html')
 
@@ -133,12 +133,42 @@ def getDashboardPage(userId):
 
 
 @app.route('/register', methods=['GET'])
-def getRegister():
+@unprotectedRoute
+def getRegisterPage():
     return render_template('register.html')
 
 
+@app.route('/register', methods=['POST'])
+@unprotectedRoute
+def registerUser():
+    try:
+        firstName = request.form['firstName']  # type: ignore
+        lastName = request.form['lastName']  # type: ignore
+        username = request.form['username']  # type: ignore
+        password = request.form['password']  # type: ignore
+        confirmPassword = request.form['confirmPassword']  # type: ignore
+        email = request.form['email']  # type: ignore
+        if password == confirmPassword:
+            if firstName and lastName and username and password and confirmPassword and email:
+                exist = db.users.find_one({'email': email})
+                if not exist:
+                    user = User(firstName=firstName, lastName=lastName, username=username, password=password, email=email)
+                    user = db.users.insert_one(user.toDictionary())
+                    flash('User created sucessfully.')
+                    return redirect(url_for('login'))
+                else:
+                    flash('User already exists.')
+                    return redirect(url_for('getRegisterPage'))
+        else:
+            flash('Password mismatch.')
+            return redirect(url_for('getRegisterPage'))
+    except Exception as e:
+        flash('User creattion failed.')
+        return redirect(url_for('getRegisterPage'))
+
+
 @app.route('/', methods=['GET'])
-@protectedRoute
+@unprotectedRoute
 def getHomePage():
     return render_template('index.html')
 
