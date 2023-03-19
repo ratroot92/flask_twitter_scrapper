@@ -51,7 +51,7 @@ class Scrapper:
                 if len(target['tweets']) == 0:
                     for hashtag in target['targets']:
                         tweets = []
-                        snsScrapper = sntwitter.TwitterSearchScraper('fire')
+                        snsScrapper = sntwitter.TwitterHashtagScraper(hashtag)
                         for counter, tweet in enumerate(snsScrapper.get_items()):
                             if counter >= int(target['limit']):
                                 break
@@ -67,7 +67,7 @@ class Scrapper:
                 else:
                     for hashtag in target['targets']:
                         tweets = []
-                        snsScrapper = sntwitter.TwitterSearchScraper(hashtag)
+                        snsScrapper = sntwitter.TwitterHashtagScraper(hashtag)
                         for counter, tweet in enumerate(snsScrapper.get_items()):
                             if counter >= int(target['limit']):
                                 break

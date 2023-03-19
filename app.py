@@ -4,8 +4,6 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request
-import asyncio
-import json
 import snscrape.modules.twitter as sntwitter
 from datetime import datetime
 import json
@@ -15,11 +13,7 @@ from utils.snsscrapper import Scrapper
 from config.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-import jwt
-import datetime
 from multiprocessing import Process
-from utils.util import Utils
-import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from jwt.exceptions import ExpiredSignatureError
 import os
@@ -41,9 +35,9 @@ def worker():
 
 def activateTaskScheduler():
     scheduler = BackgroundScheduler(daemon=True)
-    scheduler.add_job(func=worker, trigger='interval', seconds=60)
+    scheduler.add_job(func=worker, trigger='interval', seconds=10)
     scheduler.start()
-    print(" >>> Scheduler started")
+    print(">>> Scheduler started")
 
 
 class MyFlaskApp(Flask):
