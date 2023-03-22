@@ -8,3 +8,5 @@ snscrape
 flask_login
 flask_wtf
 flask_bcrypt
+Flask_mail
+python-dotenv

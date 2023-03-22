@@ -4,6 +4,8 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request
+import asyncio
+import json
 import snscrape.modules.twitter as sntwitter
 from datetime import datetime
 import json
@@ -13,10 +15,16 @@ from utils.snsscrapper import Scrapper
 from config.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+import jwt
+import datetime
 from multiprocessing import Process
+from utils.util import Utils
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from jwt.exceptions import ExpiredSignatureError
 import os
+from flask_mail import Mail
+from flask_mail import Message
 
 
 def worker():
@@ -25,11 +33,21 @@ def worker():
         for target in targets:
             # if target['status'] == 0:
             target['_id'] = str(target['_id'])
-            Scrapper.scrapKeywords(target)
+            tweets = Scrapper.scrapKeywords(target)
+            if tweets is not None:
+                if (len(tweets) > 0):
+                    content = "<ul>"
+                    for tweet in tweets:
+                        content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
+                    content += "</ul>"
+                    with app.app_context():
+                        msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
+                        msg.body = content
+                        mail.send(msg)
             print("Process Complete!!! for "+target['_id']+" " + target['targetType'])
     except Exception as e:
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(e)
+        print("worker >>> ", e)
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 
@@ -51,6 +69,13 @@ class MyFlaskApp(Flask):
 app = MyFlaskApp(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = '004f2af45d3a4e161a7dd2d17fdae47f'
+app.config['MAIL_SERVER'] = "smtp.gmail.com"
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'maliksblr92@gmail.com'
+app.config['MAIL_PASSWORD'] = 'sfyftjqdwkqmizbm'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
 
 
 def protectedRoute(func):
@@ -206,22 +231,22 @@ def addUserTarget(userId):
     try:
         targetType = request.form['targetType']  # type: ignore
         targets = request.form['targets']  # type: ignore
-        limit = request.form['limit']
+        # limit = request.form['limit']
         if not targets:
             flash('Targets are required.')
             return redirect(url_for('getDashboardPage'))
-        if not limit:
-            flash('Limit are required.')
+        # if not limit:
+        #     flash('Limit are required.')
             return redirect(url_for('getDashboardPage'))
         targets = targets.split(',')
         if (len(targets)):
             for target in targets:
                 target = target.strip()
             user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets, limit=int(limit), user=user['_id'])
+            target = Target(targetType=targetType, targets=targets, limit=int(100000), user=user['_id'])
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
-            return redirect(url_for('getDashboardPage'))
+        return redirect(url_for('getDashboardPage'))
     except Exception as e:
         flash(str(e))
         return redirect(url_for('getDashboardPage'))

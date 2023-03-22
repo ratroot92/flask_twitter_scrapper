@@ -20,20 +20,20 @@
 
           <form id="twitter-target-form" method="POST" action="/user/target/keywords">
             <div class="form-group">
-              <label for="targetType">Target Type:</label>
+              <label for="targetType">Target Type</label>
               <select class="form-control form-control-sm" id="targetType" name="targetType">
-                <option value="twitter-hashtag">Twitter Hashtag</option>
+               <!-- <option value="twitter-hashtag">Twitter Hashtag</option>-->
                 <option value="twitter-user">Twitter User</option>
                 <option value="keywords">Keywords</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="targets">Targets:</label>
+              <label for="targets">Targets</label>
               <input type="text" class="form-control form-control-sm" id="targets" name="targets" />
               <small class="form-text text-muted">Please enter one target per line.</small>
             </div>
-            <div class="form-group">
-              <label for="limit">Limit:</label>
+           <!--  <div class="form-group">
+              <label for="limit">Limit</label>
               <select class="form-control form-control-sm" id="limit" name="limit">
                 <option value="5">5</option>
                 <option value="10">10</option>
@@ -42,11 +42,10 @@
                 <option value="100">100</option>
                 <option value="500">500</option>
                 <option value="1000">1000</option>
-
-
+                <option value="0">All</option>
 
               </select>
-            </div>
+            </div> -->
            <div class="text-center">
             <button type="submit" class="btn btn-primary">Submit</button>
            </div>

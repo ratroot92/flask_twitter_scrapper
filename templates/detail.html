@@ -27,7 +27,14 @@
           <p class="card-text">
             Target Type: {{context['target']['targetType']}}
           </p>
-          <p class="card-text">Targets: {{context['target']['targets']}}</p>
+          <p class="card-text">Targets:
+            <ul class="list list-inline">
+              {% for target in context['target']['targets']%}
+              <li class="">{{loop.index}} - {{target}}</li>
+              {% endfor %}
+            </ul>
+          </p>
+
           <p class="card-text">Limit: {{context['target']['limit']}}</p>
         </div>
       </div>
@@ -37,9 +44,41 @@
           {% for tweet in context['target']['tweets'] %}
           <div class="col-md-4">
             <div class="tweet-card card mb-3">
+              <div class="card-header">
+                <div class="row">
+                  <div class="col-md-3" style="font-size:9px;">Likes : {{tweet['likeCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Retweets: {{tweet['retweetCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Replies : {{tweet['replyCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
+                </div>
+                <div class="row">
+                  <div class="col-md-3" style="font-size:9px;">Views : {{tweet['viewCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Retweets: {{tweet['retweetCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Replies : {{tweet['replyCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
+                </div>
+              </div>
               <div class="card-body">
-                <h5 class="card-title">{{ tweet['username'] }}</h5>
-                <p class="card-text">{{ tweet['rawContent'] }}</p>
+                <div class="row">
+                  <div class="col-md-6"> <p class="card-text" style='font-size:12px;'>{{ tweet['username'] }}</p></div>
+                  <div class="col-md-3"><a href="{{ tweet['url'] }}" style='font-size:10px;' target="_blank" >Open tweets on @twitter.com</a></div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6"> <img src="{{ tweet['user']['profileImageUrl'] }}" class="img-fluid"></div>
+                  <div class="col-md-6"> <img src="{{ tweet['user']['profileBannerUrl'] }}" class="img-fluid"></div>
+
+                </div>
+                <div class="row mt-2 mb-2">
+                  <div class="col-md-12"><p class="card-text" style='font-size:10px;'>Source : {{ tweet['sourceLabel'] }}</p></div>
+                  <div class="col-md-12"><p class="card-text" style='font-size:10px;'>Content :</p>
+                <small> {{ tweet['rawContent'] }}</small>
+                  </div>
+
+
+                </div>
+             
+              
                 <p class="card-text">
                   <small class="text-muted">{{ tweet['created_at'] }}</small>
                 </p>
