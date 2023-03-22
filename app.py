@@ -31,20 +31,27 @@ def worker():
     try:
         targets = db.targets.find({})
         for target in targets:
-            # if target['status'] == 0:
-            target['_id'] = str(target['_id'])
-            tweets = Scrapper.scrapKeywords(target)
-            if tweets is not None:
-                if (len(tweets) > 0):
-                    content = "<ul>"
-                    for tweet in tweets:
-                        content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
-                    content += "</ul>"
-                    with app.app_context():
-                        msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
-                        msg.body = content
-                        mail.send(msg)
-            print("Process Complete!!! for "+target['_id']+" " + target['targetType'])
+            print("target['status']", target['status'])
+            if target['status'] == 0:
+                target['_id'] = str(target['_id'])
+                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 1}, })
+                newTweets = Scrapper.scrapKeywords(target)
+                if newTweets is not None:
+                    if (len(newTweets) > 0):
+                        content = "<ul>"
+                        for tweet in newTweets:
+                            content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
+                        content += "</ul>"
+                        with app.app_context():
+                            msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
+                            msg.body = content
+                            mail.send(msg)
+                else:
+                    pass
+            else:
+                print("Target already in progress.")
+                pass
+        print("Process Complete!!! for "+target['_id']+" " + target['targetType'])
     except Exception as e:
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print("worker >>> ", e)
@@ -127,7 +134,6 @@ def userLogin():
         if user:
             session['isAuthenticated'] = True
             session['userId'] = str(user['_id'])
-            context = {'user': user}
             return redirect(url_for('getDashboardPage'))
         else:
             flash('Invalid Credentials.')
@@ -149,6 +155,14 @@ def getDashboardPage(userId):
     targets = db.targets.find({'user': ObjectId(userId)})
     context = {'targets': targets}
     return render_template('dashboard.html', context=context)
+
+
+@app.route('/configurations', methods=['GET'])
+@protectedRoute
+def getConfigPage(userId):
+    # targets = db.targets.find({'user': ObjectId(userId)})
+    # context = {'targets': targets}
+    return render_template('configuration.html', context={})
 
 
 @app.route('/register', methods=['GET'])

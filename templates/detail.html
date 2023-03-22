@@ -42,7 +42,7 @@
         <h4>Tweets</h4>
         <div class="row">
           {% for tweet in context['target']['tweets'] %}
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="tweet-card card mb-3">
               <div class="card-header">
                 <div class="row">
@@ -53,15 +53,15 @@
                 </div>
                 <div class="row">
                   <div class="col-md-3" style="font-size:9px;">Views : {{tweet['viewCount']}}</div>
-                  <div class="col-md-3" style="font-size:9px;">Retweets: {{tweet['retweetCount']}}</div>
-                  <div class="col-md-3" style="font-size:9px;">Replies : {{tweet['replyCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Loc: {{tweet['user']['location'] or "N/A"}} </div>
+                  <div class="col-md-3" style="font-size:9px;">Verified : {{tweet['user']['verified']}}</div>
                   <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
                 </div>
               </div>
               <div class="card-body">
                 <div class="row">
                   <div class="col-md-6"> <p class="card-text" style='font-size:12px;'>{{ tweet['username'] }}</p></div>
-                  <div class="col-md-3"><a href="{{ tweet['url'] }}" style='font-size:10px;' target="_blank" >Open tweets on @twitter.com</a></div>
+                  <div class="col-md-3"><a href="{{ tweet['url'] }}" style='font-size:10px;' target="_blank" >click</a></div>
                 </div>
 
                 <div class="row">

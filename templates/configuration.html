@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div>
+  <div class="container mx-auto">
+    <div class="row d-flex align-items-center justify-content-center">
+      <div class="col-md-6">
+        <div class="login-body">
+          <h1 class="text-center">Scrapper Configurations</h1>
+          <br />
+       
+
+          {% with messages = get_flashed_messages() %} {% if messages %}
+          <div class="alert alert-primary" role="alert">
+            {% for message in messages %}
+            <div>{{ message }}</div>
+            {% endfor %}
+            </div>  
+          {% endif %} {% endwith %}
+
+          <form id="twitter-target-form" method="POST" action="/user/target/configuration">
+
+            <div class="form-group">
+              <label for="likeCount">Likes Count</label>
+              <input type="number" class="form-control form-control-sm" id="targets" name="likeCount" />
+            </div>
+
+            <div class="form-group">
+                <label for="retweetCount">Retweet Count</label>
+                <input type="number" class="form-control form-control-sm" id="targets" name="retweetCount" />
+              </div>
+
+            <div class="form-group">
+                <label for="retweetCount">View Count</label>
+                <input type="number" class="form-control form-control-sm" id="targets" name="retweetCount" />
+              </div>
+
+              <div class="form-group">
+                <label for="inKeywords">In Keywords</label>
+                <input type="number" class="form-control form-control-sm" id="targets" name="inKeywords" />
+              </div>
+
+              <div class="form-group">
+                <label for="outKeywords">Out Keywords</label>
+                <input type="number" class="form-control form-control-sm" id="targets" name="outKeywords" />
+              </div>
+
+
+            <div class="form-group">
+                <label for="likeCount">Location</label>
+                <select class="form-control form-control-sm" id="limit" name="limit">
+                    <option value="Islamabad, Pakistan"> Islamabad, Pakistan</option>
+                  </select>
+              </div>
+           
+         
+           <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
+           </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container mx-auto">
+    <div class="row d-flex align-items-center justify-content-center">
+      <div class="col-md-10">
+        <div class="twitter-data-body" style="padding-top: 30px">
+          <h2 class="text-center">Twitter Data</h2>
+          <table class="table table-striped" id="myTable">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Target Type</th>
+                <th scope="col">Target Keywords</th>
+                <th scope="col">Limit</th>
+                <th scope="col">View</th>
+                <th scope="col">Delete</th>
+  
+              </tr>
+            </thead>
+            <tbody>
+              {% if context['targets'] %}
+              {% for target in context['targets'] %}
+              <tr>
+                <th scope="row">{{loop.index}}</th>
+                <td>{{ target['likeCount'] }}</td>
+                <td>
+                  {% for target in target['targets']  %}
+                 <span> {{target}}</span>
+                   {% endfor%}
+                  </td>
+                <td>{{ target['limit'] }}</td>
+                <td><a class="btn btn-sm btn-outline-success" type="button"
+                    href="{{url_for('viewUserTarget',targetId=target['_id'])}}"><i class="fas fa-eye"></i><a></td>
+                <td><a class="btn btn-sm btn-outline-danger" type="button"
+                    href="{{url_for('deleteUserTarget',targetId=target['_id'])}}"><i class="fas fa-trash"></i><a></td>
+              </tr>
+              {% endfor %}
+              {% endif %}
+  
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
