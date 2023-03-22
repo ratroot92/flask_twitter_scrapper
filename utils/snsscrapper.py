@@ -28,7 +28,7 @@ class Scrapper:
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for "+target['_id']+" " + target['targetType'] + " against keyword " + keyword)
+                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
                         return None
 
             else:
@@ -51,7 +51,7 @@ class Scrapper:
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for "+target['_id']+" " + target['targetType'] + " against keyword " + keyword)
+                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
                         return None
 
         elif (target['targetType'] == 'twitter-user'):
@@ -68,10 +68,11 @@ class Scrapper:
                         if len(scrappedTweets) > 0:
                             update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}}
                             result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
-                            print(f"First Entry !!! Matched {result.matched_count} documents for "+target['_id']+" " + target['targetType'] + " against username " + username)
+                            print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
                             return None
                         else:
-                            print("NO TWEETS FOUND!!! "+target['_id']+" " + target['targetType'] + " against username " + username)
+                            db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                            print("NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
                             return None
                 else:
                     for username in target['targets']:
@@ -88,14 +89,15 @@ class Scrapper:
                                 if len(newScrappedTweets) > 0:
                                     update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}}
                                     result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
-                                    print(f"Scheduled!!! Matched {result.matched_count} documents for "+target['_id']+" " + target['targetType'] + " against username " + username)
-                                    print(f"Scheduled!!! Modified {result.modified_count} documents for "+target['_id']+" " + target['targetType'] + " against username " + username)
+                                    print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
+                                    print(f"Scheduled!!! Modified {result.modified_count} documents for  " + target['targetType'] + " against username " + username)
                                     return newScrappedTweets
                                 else:
                                     return None
 
                         else:
-                            print("NO TWEETS FOUND!!! "+target['_id']+" " + target['targetType'] + " against username " + username)
+                            db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                            print("NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
                             return None
             except Exception as e:
                 print(e)

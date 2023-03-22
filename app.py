@@ -33,10 +33,9 @@ def worker():
     try:
         targets = db.targets.find({})
         for target in targets:
-            print("target['status']", target['status'])
+            print("1", type(target['_id']))
             if target['status'] == 0:
-                target['_id'] = str(target['_id'])
-                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 1}, })
+                db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
                 newTweets = Scrapper.scrapKeywords(target)
                 if newTweets is not None:
                     if (len(newTweets) > 0):
@@ -53,7 +52,7 @@ def worker():
             else:
                 print("Target already in progress.")
                 pass
-        print("Process Complete!!! for "+target['_id']+" " + target['targetType'])
+        print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
     except Exception as e:
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print("worker >>> ", e)
@@ -180,6 +179,14 @@ def setConfgurations():
         viewCount = request.form['viewCount']  # type: ignore
         inKeywords = request.form['inKeywords']  # type: ignore
         outKeywords = request.form['outKeywords']  # type: ignore
+        if likeCount:
+            flash('likeCount is required.')
+            return redirect(url_for('getConfigPage'))
+        if retweetCount:
+            flash('retweetCount is required.')
+        if viewCount:
+            flash('viewCount is required.')
+            return redirect(url_for('getConfigPage'))
         targetConfiguration = TargetConfiguration(likeCount=likeCount, retweetCount=retweetCount, location=location, viewCount=viewCount, inKeywords=inKeywords, outKeywords=outKeywords)
         targetConfiguration = db.target_configurations.insert_one(targetConfiguration.toDictionary())
         return redirect(url_for('getConfigPage'))
