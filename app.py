@@ -11,6 +11,8 @@ from datetime import datetime
 import json
 from models.user import User
 from models.target import Target
+from models.configuration import TargetConfiguration
+
 from utils.snsscrapper import Scrapper
 from config.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -168,6 +170,24 @@ def getConfigPage(userId):
     return render_template('configuration.html', context={})
 
 
+@app.route('/user/target/configuration', methods=['POST'])
+@protectedRoute
+def setConfgurations():
+    try:
+        likeCount = request.form['likeCount']  # type: ignore
+        retweetCount = request.form['retweetCount']  # type: ignore
+        location = request.form['location']  # type: ignore
+        viewCount = request.form['viewCount']  # type: ignore
+        inKeywords = request.form['inKeywords']  # type: ignore
+        outKeywords = request.form['outKeywords']  # type: ignore
+        targetConfiguration = TargetConfiguration(likeCount=likeCount, retweetCount=retweetCount, location=location, viewCount=viewCount, inKeywords=inKeywords, outKeywords=outKeywords)
+        targetConfiguration = db.target_configurations.insert_one(targetConfiguration.toDictionary())
+        return redirect(url_for('getConfigPage'))
+    except Exception as e:
+        flash('TargetConfguration creation failed...')
+        return redirect(url_for('getConfigPage'))
+
+
 @app.route('/register', methods=['GET'])
 @unprotectedRoute
 def getRegisterPage():
@@ -199,7 +219,7 @@ def registerUser():
             flash('Password mismatch.')
             return redirect(url_for('getRegisterPage'))
     except Exception as e:
-        flash('User creattion failed.')
+        flash('User creation failed...')
         return redirect(url_for('getRegisterPage'))
 
 
@@ -250,12 +270,8 @@ def addUserTarget(userId):
     try:
         targetType = request.form['targetType']  # type: ignore
         targets = request.form['targets']  # type: ignore
-        # limit = request.form['limit']
         if not targets:
             flash('Targets are required.')
-            return redirect(url_for('getDashboardPage'))
-        # if not limit:
-        #     flash('Limit are required.')
             return redirect(url_for('getDashboardPage'))
         targets = targets.split(',')
         if (len(targets)):
