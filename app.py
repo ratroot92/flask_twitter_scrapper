@@ -134,6 +134,9 @@ def userLogin():
         if user:
             session['isAuthenticated'] = True
             session['userId'] = str(user['_id'])
+            session['username'] = user['username']
+            session['email'] = user['email']
+
             return redirect(url_for('getDashboardPage'))
         else:
             flash('Invalid Credentials.')
@@ -210,6 +213,8 @@ def getHomePage():
 def logoutUser():
     session['isAuthenticated'] = False
     session['userId'] = ''
+    session['username'] = ''
+    session['email'] = ''
     return redirect(url_for('login'))
 
 

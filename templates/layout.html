@@ -202,9 +202,18 @@
             placeholder="Search"
             aria-label="Search"
           /> -->
-          <a href="/logout" class="btn btn-primary my-2 my-sm-0" type="button"
-            >Logout</a
+
+          <div
+            class="d-flex flex-column justify-content-center align-items-center"
           >
+            <a
+              href="/logout"
+              class="btn btn-sm btn-warning my-2 my-sm-0"
+              type="button"
+              >Logout</a
+            >
+            <p class="" style="font-size: 13px">{{session['email']}}</p>
+          </div>
         </form>
       </div>
     </nav>

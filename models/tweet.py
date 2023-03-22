@@ -3,15 +3,14 @@ from config.db import db
 
 class TargetConfiguration():
 
-    def __init__(self, likesCount, retweetCount, location, viewCount, inKeywords=[], outKeywords=0,user):
-        self.likeCount = likesCount
-        self.retweetCount = retweetCount
+    def __init__(self, likesCount, retweetCount, location, viewCount, inKeywords, outKeywords, user):
+        self.likeCount = likesCount or 1
+        self.retweetCount = retweetCount or 1
         self.location = location
-        self.viewCount = viewCount or 10
+        self.viewCount = viewCount or 1
         self.inKeywords = inKeywords or []
-        self.outKeywords = outKeywords or 0
-        self.user = user 
-
+        self.outKeywords = outKeywords or []
+        self.user = user
 
     def __str__(self):
         return f" >>>  TargetConfig({self.likeCount},{self.retweetCount},{self.location})"
