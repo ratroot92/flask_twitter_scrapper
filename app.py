@@ -36,16 +36,19 @@ def worker():
             print("target['status']", target['status'])
             if target['status'] == 0:
                 target['_id'] = str(target['_id'])
-                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 1}, })
+                db.targets.update_one({'_id': ObjectId(target['_id'])}, {
+                                      '$set': {'status': 1}, })
                 newTweets = Scrapper.scrapKeywords(target)
                 if newTweets is not None:
                     if (len(newTweets) > 0):
                         content = "<ul>"
                         for tweet in newTweets:
-                            content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
+                            content += "<li> Tweet Content" + \
+                                tweet['rawContent']+"</li>"
                         content += "</ul>"
                         with app.app_context():
-                            msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
+                            msg = Message("Alert", sender="maliksblr92@gmail.com",
+                                          recipients=["rizwanhussain4426@gmail.com"])
                             msg.body = content
                             mail.send(msg)
                 else:
@@ -53,7 +56,8 @@ def worker():
             else:
                 print("Target already in progress.")
                 pass
-        print("Process Complete!!! for "+target['_id']+" " + target['targetType'])
+        print("Process Complete!!! for " +
+              target['_id']+" " + target['targetType'])
     except Exception as e:
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print("worker >>> ", e)
@@ -72,7 +76,8 @@ class MyFlaskApp(Flask):
         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
             with self.app_context():
                 activateTaskScheduler()
-        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+        super(MyFlaskApp, self).run(host=host, port=port,
+                                    debug=debug, load_dotenv=load_dotenv, **options)
 
 
 app = MyFlaskApp(__name__)
@@ -165,25 +170,29 @@ def getDashboardPage(userId):
 @app.route('/configurations', methods=['GET'])
 @protectedRoute
 def getConfigPage(userId):
-    # targets = db.targets.find({'user': ObjectId(userId)})
+    targets = db.targets.find({'user': ObjectId(userId)})
     # context = {'targets': targets}
+    print(targets)
     return render_template('configuration.html', context={})
 
 
 @app.route('/user/target/configuration', methods=['POST'])
 @protectedRoute
-def setConfgurations():
+def setConfgurations(userId):
     try:
-        likeCount = request.form['likeCount']  # type: ignore
+        likesCount = request.form['likesCount']  # type: ignore
         retweetCount = request.form['retweetCount']  # type: ignore
         location = request.form['location']  # type: ignore
         viewCount = request.form['viewCount']  # type: ignore
         inKeywords = request.form['inKeywords']  # type: ignore
         outKeywords = request.form['outKeywords']  # type: ignore
-        targetConfiguration = TargetConfiguration(likeCount=likeCount, retweetCount=retweetCount, location=location, viewCount=viewCount, inKeywords=inKeywords, outKeywords=outKeywords)
-        targetConfiguration = db.target_configurations.insert_one(targetConfiguration.toDictionary())
+        targetConfiguration = TargetConfiguration(likesCount=likesCount, retweetCount=retweetCount,
+                                                  location=location, viewCount=viewCount, inKeywords=inKeywords, outKeywords=outKeywords, user=userId)
+        targetConfiguration = db.target_configurations.insert_one(
+            targetConfiguration.toDictionary())
         return redirect(url_for('getConfigPage'))
     except Exception as e:
+        print('error.....', e)
         flash('TargetConfguration creation failed...')
         return redirect(url_for('getConfigPage'))
 
@@ -208,7 +217,8 @@ def registerUser():
             if firstName and lastName and username and password and confirmPassword and email:
                 exist = db.users.find_one({'email': email})
                 if not exist:
-                    user = User(firstName=firstName, lastName=lastName, username=username, password=password, email=email)
+                    user = User(firstName=firstName, lastName=lastName,
+                                username=username, password=password, email=email)
                     user = db.users.insert_one(user.toDictionary())
                     flash('User created sucessfully.')
                     return redirect(url_for('login'))
@@ -278,7 +288,8 @@ def addUserTarget(userId):
             for target in targets:
                 target = target.strip()
             user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets, limit=int(100000), user=user['_id'])
+            target = Target(targetType=targetType, targets=targets,
+                            limit=int(100000), user=user['_id'])
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
         return redirect(url_for('getDashboardPage'))

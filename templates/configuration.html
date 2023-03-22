@@ -2,6 +2,7 @@
 
 {% block main %}
 <div>
+  <!-- {{context}} -->
   <div class="container mx-auto">
     <div class="row d-flex align-items-center justify-content-center">
       <div class="col-md-6">
@@ -21,34 +22,34 @@
           <form id="twitter-target-form" method="POST" action="/user/target/configuration">
 
             <div class="form-group">
-              <label for="likeCount">Likes Count</label>
-              <input type="number" class="form-control form-control-sm" id="targets" name="likeCount" />
+              <label for="likesCount">Likes Count</label>
+              <input type="number" class="form-control form-control-sm" id="likesCount" name="likesCount" required min="1" />
             </div>
 
             <div class="form-group">
                 <label for="retweetCount">Retweet Count</label>
-                <input type="number" class="form-control form-control-sm" id="targets" name="retweetCount" />
+                <input type="number" class="form-control form-control-sm" id="retweetCount" name="retweetCount" required min="1" />
               </div>
 
             <div class="form-group">
-                <label for="retweetCount">View Count</label>
-                <input type="number" class="form-control form-control-sm" id="targets" name="retweetCount" />
+                <label for="viewCount">View Count</label>
+                <input type="number" class="form-control form-control-sm" id="viewCount" name="viewCount" required min="1" />
               </div>
 
               <div class="form-group">
                 <label for="inKeywords">In Keywords</label>
-                <input type="text" class="form-control form-control-sm" id="targets" name="inKeywords" />
+                <input type="text" class="form-control form-control-sm" id="inKeywords" name="inKeywords" required />
               </div>
 
               <div class="form-group">
                 <label for="outKeywords">Out Keywords</label>
-                <input type="text" class="form-control form-control-sm" id="targets" name="outKeywords" />
+                <input type="text" class="form-control form-control-sm" id="outKeywords" name="outKeywords" required />
               </div>
 
 
             <div class="form-group">
                 <label for="likeCount">Location</label>
-                <select class="form-control form-control-sm" id="limit" name="limit">
+                <select class="form-control form-control-sm" id="location" name="location">
                     <option value="Islamabad, Pakistan"> Islamabad, Pakistan</option>
                   </select>
               </div>
