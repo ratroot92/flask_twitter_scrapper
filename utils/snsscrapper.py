@@ -20,10 +20,9 @@ class Scrapper:
                     for counter, tweet in enumerate(snsScrapper.get_items()):
                         if counter > 100:
                             break
-                        tweets.append({'keyword': keyword, 'date': tweet.date, 'id': tweet.id, 'rawContent': tweet.rawContent, 'username': tweet.user.username})
+                        tweets.append(json.loads(tweet.json()))
                     if len(tweets) > 0:
-                        update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': tweets}}}
-                        result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
+                        result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': tweets}}})
                         print(f"First Entry !!! Matched {result.matched_count} documents.")
                         return None
                     else:
@@ -40,7 +39,7 @@ class Scrapper:
                             break
                         exist = list(filter(lambda tweet: tweet["id"] == tweet['id'], target['tweets']))
                         if not exist:
-                            tweets.append({'keyword': keyword, 'date': tweet.date, 'id': tweet.id, 'rawContent': tweet.rawContent, 'username': tweet.user.username})
+                            tweets.append(json.loads(tweet.json()))
                     if len(tweets) > 0:
                         update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': tweets}}}
                         result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
@@ -66,8 +65,7 @@ class Scrapper:
                             if 'love' in tweet.rawContent:
                                 scrappedTweets.append(json.loads(tweet.json()))
                         if len(scrappedTweets) > 0:
-                            update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}}
-                            result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
+                            result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}})
                             print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
                             return None
                         else:
@@ -87,8 +85,7 @@ class Scrapper:
                             if (len(scrappedTweets) > len(target['tweets'])):
                                 newScrappedTweets = list(filter(lambda x: len(list(filter(lambda y: y['id'] == x['id'], target['tweets']))) == 0, scrappedTweets))
                                 if len(newScrappedTweets) > 0:
-                                    update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}}
-                                    result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
+                                    result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}})
                                     print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
                                     print(f"Scheduled!!! Modified {result.modified_count} documents for  " + target['targetType'] + " against username " + username)
                                     return newScrappedTweets

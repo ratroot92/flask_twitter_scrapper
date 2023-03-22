@@ -18,7 +18,6 @@ from config.db import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import jwt
-import datetime
 from multiprocessing import Process
 from utils.util import Utils
 import time
@@ -27,32 +26,46 @@ from jwt.exceptions import ExpiredSignatureError
 import os
 from flask_mail import Mail
 from flask_mail import Message
+from datetime import date
+from datetime import datetime, timedelta
 
 
 def worker():
     try:
-        targets = db.targets.find({})
-        for target in targets:
-            print("1", type(target['_id']))
-            if target['status'] == 0:
-                db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
-                newTweets = Scrapper.scrapKeywords(target)
-                if newTweets is not None:
-                    if (len(newTweets) > 0):
-                        content = "<ul>"
-                        for tweet in newTweets:
-                            content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
-                        content += "</ul>"
-                        with app.app_context():
-                            msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
-                            msg.body = content
-                            mail.send(msg)
-                else:
-                    pass
-            else:
-                print("Target already in progress.")
-                pass
-        print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
+        print("started")
+        startDate = str(date.today()-timedelta(days=10))
+        endDate = str(date.today())
+        query = "from:maliksblr92 " + str("love") + " since:" + str(startDate) + " until:" + str(endDate)
+        print(query)
+
+        snsScrapper = sntwitter.TwitterSearchScraper(query)
+        for counter, tweet in enumerate(snsScrapper.get_items()):
+            # if counter > 5:
+            #     break
+            print(tweet.rawContent)
+
+    # targets = db.targets.find({})
+    # for target in targets:
+    #     print("1", type(target['_id']))
+    #     if target['status'] == 0:
+    #         db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
+    #         newTweets = Scrapper.scrapKeywords(target)
+    #         if newTweets is not None:
+    #             if (len(newTweets) > 0):
+    #                 content = "<ul>"
+    #                 for tweet in newTweets:
+    #                     content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
+    #                 content += "</ul>"
+    #                 with app.app_context():
+    #                     msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
+    #                     msg.body = content
+    #                     mail.send(msg)
+    #         else:
+    #             pass
+    #     else:
+    #         print("Target already in progress.")
+    #         pass
+    # print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
     except Exception as e:
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         print("worker >>> ", e)
@@ -60,10 +73,19 @@ def worker():
 
 
 def activateTaskScheduler():
-    scheduler = BackgroundScheduler(daemon=True)
-    scheduler.add_job(func=worker, trigger='interval', seconds=10)
-    scheduler.start()
-    print(">>> Scheduler started")
+    startDate = str(date.today()-timedelta(days=365))
+    endDate = str(date.today())
+    query = "from:maliksblr92 " + str("love1")
+    print(query)
+    snsScrapper = sntwitter.TwitterSearchScraper(query)
+    for counter, tweet in enumerate(snsScrapper.get_items()):
+        # if counter > 5:
+        #     break
+        print(tweet.rawContent)
+    # scheduler = BackgroundScheduler(daemon=True)
+    # scheduler.add_job(func=worker, trigger='interval', seconds=20)
+    # scheduler.start()
+    # print(">>> Scheduler started")
 
 
 class MyFlaskApp(Flask):

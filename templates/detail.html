@@ -53,8 +53,8 @@
                 </div>
                 <div class="row">
                   <div class="col-md-3" style="font-size:9px;">Views : {{tweet['viewCount']}}</div>
-                  <div class="col-md-3" style="font-size:9px;">Loc: {{tweet['user']['location'] or "N/A"}} </div>
-                  <div class="col-md-3" style="font-size:9px;">Verified : {{tweet['user']['verified']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Loc:{% if tweet['user']%} {{tweet['user']['location'] or "N/A"}}{% endif %} </div>
+                  <div class="col-md-3" style="font-size:9px;">Verified : {% if tweet['user']%}{{tweet['user']['verified']}}{% endif %}</div>
                   <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
                 </div>
               </div>
@@ -65,8 +65,8 @@
                 </div>
 
                 <div class="row">
-                  <div class="col-md-6"> <img src="{{ tweet['user']['profileImageUrl'] }}" class="img-fluid"></div>
-                  <div class="col-md-6"> <img src="{{ tweet['user']['profileBannerUrl'] }}" class="img-fluid"></div>
+                  <div class="col-md-6"> <img src="{% if tweet['user']%}{{ tweet['user']['profileImageUrl'] }}{% endif %}" class="img-fluid"></div>
+                  <div class="col-md-6"> <img src="{% if tweet['user']%}{{ tweet['user']['profileBannerUrl'] }}{% endif %}" class="img-fluid"></div>
 
                 </div>
                 <div class="row mt-2 mb-2">
