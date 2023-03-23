@@ -11,7 +11,7 @@ from datetime import datetime
 import json
 from models.user import User
 from models.target import Target
-from models.configuration import TargetConfiguration
+from models.configuration import Confgiuration
 
 from utils.snsscrapper import Scrapper
 from config.db import db
@@ -28,64 +28,44 @@ from flask_mail import Mail
 from flask_mail import Message
 from datetime import date
 from datetime import datetime, timedelta
+from dotenv import dotenv_values
+envConfig = dotenv_values(".env")
 
 
 def worker():
     try:
-        print("started")
-        startDate = str(date.today()-timedelta(days=10))
-        endDate = str(date.today())
-        query = "from:maliksblr92 " + str("love") + " since:" + str(startDate) + " until:" + str(endDate)
-        print(query)
-
-        snsScrapper = sntwitter.TwitterSearchScraper(query)
-        for counter, tweet in enumerate(snsScrapper.get_items()):
-            # if counter > 5:
-            #     break
-            print(tweet.rawContent)
-
-    # targets = db.targets.find({})
-    # for target in targets:
-    #     print("1", type(target['_id']))
-    #     if target['status'] == 0:
-    #         db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
-    #         newTweets = Scrapper.scrapKeywords(target)
-    #         if newTweets is not None:
-    #             if (len(newTweets) > 0):
-    #                 content = "<ul>"
-    #                 for tweet in newTweets:
-    #                     content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
-    #                 content += "</ul>"
-    #                 with app.app_context():
-    #                     msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["rizwanhussain4426@gmail.com"])
-    #                     msg.body = content
-    #                     mail.send(msg)
-    #         else:
-    #             pass
-    #     else:
-    #         print("Target already in progress.")
-    #         pass
-    # print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
+        targets = db.targets.find({})
+        for target in targets:
+            configurations = db.configurations.find_one({'user': str(target['user'])})
+            if target['status'] == 0:
+                db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
+                newTweets = Scrapper.scrapKeywords(target, configurations)
+                if newTweets is not None:
+                    if (len(newTweets) > 0):
+                        content = "<ul>"
+                        for tweet in newTweets:
+                            content += "<li> Tweet Content"+tweet['rawContent']+"</li>"
+                        content += "</ul>"
+                        with app.app_context():
+                            msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
+                            msg.body = content
+                            mail.send(msg)
+                else:
+                    pass
+            else:
+                print("Target already in progress.")
+                pass
+            print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
     except Exception as e:
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print("worker >>> ", e)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        app.logger.error(str(e), exc_info=True)
 
 
 def activateTaskScheduler():
-    startDate = str(date.today()-timedelta(days=365))
-    endDate = str(date.today())
-    query = "from:maliksblr92 " + str("love1")
-    print(query)
-    snsScrapper = sntwitter.TwitterSearchScraper(query)
-    for counter, tweet in enumerate(snsScrapper.get_items()):
-        # if counter > 5:
-        #     break
-        print(tweet.rawContent)
-    # scheduler = BackgroundScheduler(daemon=True)
-    # scheduler.add_job(func=worker, trigger='interval', seconds=20)
-    # scheduler.start()
-    # print(">>> Scheduler started")
+    db.targets.update_many({}, {'$set': {'status': 0}})
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(func=worker, trigger='interval', seconds=20)
+    scheduler.start()
+    print(">>> Scheduler started")
 
 
 class MyFlaskApp(Flask):
@@ -93,7 +73,8 @@ class MyFlaskApp(Flask):
         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
             with self.app_context():
                 activateTaskScheduler()
-        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+        super(MyFlaskApp, self).run(host=host, port=port,
+                                    debug=debug, load_dotenv=load_dotenv, **options)
 
 
 app = MyFlaskApp(__name__)
@@ -186,33 +167,26 @@ def getDashboardPage(userId):
 @app.route('/configurations', methods=['GET'])
 @protectedRoute
 def getConfigPage(userId):
-    # targets = db.targets.find({'user': ObjectId(userId)})
-    # context = {'targets': targets}
-    return render_template('configuration.html', context={})
+    configurations = db.configurations.find_one({'user': userId})
+    context = {'configurations': configurations}
+    return render_template('configuration.html', context=context)
 
 
 @app.route('/user/target/configuration', methods=['POST'])
 @protectedRoute
-def setConfgurations():
+def setConfgurations(userId):
     try:
-        likeCount = request.form['likeCount']  # type: ignore
-        retweetCount = request.form['retweetCount']  # type: ignore
-        location = request.form['location']  # type: ignore
-        viewCount = request.form['viewCount']  # type: ignore
-        inKeywords = request.form['inKeywords']  # type: ignore
-        outKeywords = request.form['outKeywords']  # type: ignore
-        if likeCount:
-            flash('likeCount is required.')
-            return redirect(url_for('getConfigPage'))
-        if retweetCount:
-            flash('retweetCount is required.')
-        if viewCount:
-            flash('viewCount is required.')
-            return redirect(url_for('getConfigPage'))
-        targetConfiguration = TargetConfiguration(likeCount=likeCount, retweetCount=retweetCount, location=location, viewCount=viewCount, inKeywords=inKeywords, outKeywords=outKeywords)
-        targetConfiguration = db.target_configurations.insert_one(targetConfiguration.toDictionary())
+        likeCount = int(request.form['likeCount'])  # type: ignore
+        retweetCount = int(request.form['retweetCount'])  # type: ignore
+        viewCount = int(request.form['viewCount'])  # type: ignore
+        inKeywords = request.form['inKeywords'].split(",")  # type: ignore
+        outKeywords = request.form['outKeywords'].split(",")   # type: ignore
+        if likeCount and retweetCount and viewCount and len(inKeywords) > 0 and len(outKeywords) > 0:
+            db.configurations.update_one({'user': userId}, {'$set': {'likeCount': likeCount, 'retweetCount': retweetCount,
+                                                                     'viewCount': viewCount, 'inKeywords': inKeywords, 'outKeywords': outKeywords, }})
         return redirect(url_for('getConfigPage'))
     except Exception as e:
+        print('error.....', e)
         flash('TargetConfguration creation failed...')
         return redirect(url_for('getConfigPage'))
 
@@ -239,6 +213,14 @@ def registerUser():
                 if not exist:
                     user = User(firstName=firstName, lastName=lastName, username=username, password=password, email=email)
                     user = db.users.insert_one(user.toDictionary())
+                    userConfigurations = Confgiuration(
+                        likeCount=int(envConfig["TARGET_CONFIG_LIKES_COUNT"]),
+                        retweetCount=int(envConfig["TARGET_CONFIG_RETWEET_COUNT"]),
+                        viewCount=int(envConfig["TARGET_CONFIG_VIEW_COUNT"]),
+                        inKeywords=envConfig["TARGET_CONFIG_VIEW_IN_KEYWQORDS"].split(","),
+                        outKeywords=envConfig["TARGET_CONFIG_VIEW_OUT_KEYWQORDS"].split(","),
+                        user=str(user.inserted_id))
+                    db.configurations.insert_one(userConfigurations.toDictionary())
                     flash('User created sucessfully.')
                     return redirect(url_for('login'))
                 else:
@@ -248,6 +230,8 @@ def registerUser():
             flash('Password mismatch.')
             return redirect(url_for('getRegisterPage'))
     except Exception as e:
+        app.logger.error(str(e), exc_info=True)
+        # return "An error occurred", 500
         flash('User creation failed...')
         return redirect(url_for('getRegisterPage'))
 
@@ -307,7 +291,8 @@ def addUserTarget(userId):
             for target in targets:
                 target = target.strip()
             user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets, limit=int(100000), user=user['_id'])
+            target = Target(targetType=targetType, targets=targets,
+                            limit=int(100000), user=user['_id'])
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
         return redirect(url_for('getDashboardPage'))
