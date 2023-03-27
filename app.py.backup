@@ -27,7 +27,6 @@ def worker():
         targets = db.targets.find({})
         for target in targets:
             configurations = db.configurations.find_one({'user': str(target['user'])})
-            targetUsername = target['targets'][0].strip()
             if target['status'] == 0:
                 db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
                 newTweets = Scrapper.scrapKeywords(target, configurations)
@@ -35,15 +34,15 @@ def worker():
                     if (len(newTweets) > 0):
                         content = ""
                         for tweet in newTweets:
-                            # content = "Alert generated!!! against target "+targetUsername
-                            content += "\nTweeted By : "+tweet['user']['username']+"\n"
-                            content += "\nTweet Content : "+tweet['rawContent']+"\n"
-                            content += "\nLikes :" + str(tweet['likeCount'])+"\n"
-                            content += "\nRetweets:" + str(tweet['retweetCount'])+"\n"
-                            content += "\nReplies :" + str(tweet['replyCount'])+"\n"
-                            content += "\nLang :" + tweet['lang']+"\n"
-                            content += "\nViews :" + str(tweet['viewCount'])+"\n"
-                    content += ""
+                            content += "Tweeted By : "+tweet['username']
+                            content += "Tweet Content : "+tweet['rawContent']
+                            content += "Tweet Content : "+tweet['rawContent']
+                            content += "Likes :" + tweet['likeCount']
+                            content += "Retweets:" + tweet['retweetCount']
+                            content += "Replies :" + tweet['replyCount']
+                            content += "Lang :" + tweet['lang']
+                            content += "Views :" + tweet['viewCount']
+                            content += "Lang :" + tweet['lang']
                     with app.app_context():
                         msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
                         msg.body = content
@@ -298,14 +297,12 @@ def addUserTarget(userId):
             flash('Targets are required.')
             return redirect(url_for('getDashboardPage'))
         targets = targets.split(',')
-        if (len(targets) > 1):
-            flash('Only one target can be set.')
-            return redirect(url_for('getDashboardPage'))
         if (len(targets)):
             for target in targets:
                 target = target.strip()
             user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets, limit=int(100000), user=user['_id'])
+            target = Target(targetType=targetType, targets=targets,
+                            limit=int(100000), user=user['_id'])
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
         return redirect(url_for('getDashboardPage'))

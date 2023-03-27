@@ -167,55 +167,67 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
+
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a
+              class="nav-link {% if url_for(request.endpoint, **request.view_args) == '/dashboard' %} active {% endif %}"
+              href="{{url_for('getDashboardPage')}}"
+              >Twitter Engine <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% if url_for(request.endpoint, **request.view_args) == '/configurations' %} active {% endif %}"
+              href="{{url_for('getConfigPage')}}"
+              >Configuration</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{url_for('getDashboardPage')}}"
+              >Pricing</a
+            >
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="{{url_for('getDashboardPage')}}"
+              id="navbarDropdownMenuLink"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Dropdown link
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+                >Action</a
+              >
+              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+                >Another action</a
+              >
+              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+                >Something else here</a
+              >
+            </div>
+          </li>
+        </ul>
+        <div
+          class="border d-flex flex-row justify-content-center align-items-center"
+        >
+          <a
+            href="{{url_for('logoutUser')}}"
+            class="btn btn-sm btn-warning my-2 my-sm-0"
+            type="button"
+            >Logout</a
+          >
+        </div>
+      </div>
       <div
         class="collapse navbar-collapse navbar-styles"
         id="navbarTogglerDemo01"
-      >
-        <a
-          class="navbar-brand logo-styles"
-          href="{{url_for('getDashboardPage')}}"
-          >Twitter Engine</a
-        >
-        <a class="navbar-brand logo-styles" href="{{url_for('getConfigPage')}}"
-          >Configuration</a
-        >
-
-        <!-- 
- <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-          <li class="nav-item active">
-            <a class="nav-link" href="#"
-              >Configuration <span class="sr-only">(current)</span></a
-            >
-          </li>
-        <li class="nav-item">
-            <a class="nav-link" href="/user/target">User Targets</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
-          </li>
-        </ul> -->
-
-        <form class="form-inline my-2 my-lg-0">
-          <!-- <input
-            class="form-control mr-sm-2"
-            type="search"
-            placeholder="Search"
-            aria-label="Search"
-          /> -->
-
-          <div
-            class="d-flex flex-column justify-content-center align-items-center"
-          >
-            <a
-              href="/logout"
-              class="btn btn-sm btn-warning my-2 my-sm-0"
-              type="button"
-              >Logout</a
-            >
-            <p class="" style="font-size: 13px">{{session['email']}}</p>
-          </div>
-        </form>
-      </div>
+      ></div>
     </nav>
     {% block main %} {% endblock %}
     <script

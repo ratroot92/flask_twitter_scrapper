@@ -4,9 +4,9 @@
 <div>
   <div class="container mx-auto">
     <div class="row d-flex align-items-center justify-content-center">
-      <div class="col-md-6">
+      <div class="col-md-8">
         <div class="login-body">
-          <h1 class="text-center">Twitter Targets</h1>
+          <h1 class="text-center">Add Twitter Targets</h1>
           <br />
        
 
@@ -21,7 +21,7 @@
           <form id="twitter-target-form" method="POST" action="/user/target/keywords">
             <div class="form-group">
               <label for="targetType">Target Type</label>
-              <select class="form-control form-control-sm" id="targetType" name="targetType">
+              <select class="form-control form-control" id="targetType" name="targetType">
                <!-- <option value="twitter-hashtag">Twitter Hashtag</option>-->
                 <option value="twitter-user">Twitter User</option>
                 <option value="keywords">Keywords</option>
@@ -29,12 +29,12 @@
             </div>
             <div class="form-group">
               <label for="targets">Targets</label>
-              <input type="text" class="form-control form-control-sm" id="targets" name="targets" />
+              <input type="text" class="form-control form-control" id="targets" name="targets" />
               <small class="form-text text-muted">Please enter one target per line.</small>
             </div>
            <!--  <div class="form-group">
               <label for="limit">Limit</label>
-              <select class="form-control form-control-sm" id="limit" name="limit">
+              <select class="form-control form-control" id="limit" name="limit">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="15">15</option>

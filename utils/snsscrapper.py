@@ -25,11 +25,11 @@ class Scrapper:
                         tweets.append(json.loads(tweet.json()))
                     if len(tweets) > 0:
                         result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': tweets}}})
-                        print(f"First Entry !!! Matched {result.matched_count} documents.")
+                        # print(f"First Entry !!! Matched {result.matched_count} documents.")
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
+                        # print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
                         return None
 
             else:
@@ -47,80 +47,72 @@ class Scrapper:
                         result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
                         update = {'$set': {'status': 0}, '$push': {'tweets': {'$each': tweets}}}
                         result = db.targets.update_one({'_id': ObjectId(target['_id'])}, update)
-                        print(f"Scheduled : Matched {result.matched_count} documents.")
+                        # print(f"Scheduled : Matched {result.matched_count} documents.")
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
+                        # print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
                         return None
 
         elif (target['targetType'] == 'twitter-user'):
             try:
-                inQuery = ''
-                for counter, out in enumerate(configurations['inKeywords']):
+                scrappedTweets = []
+                inlcudeTimeframe = True
+                targetUsername = target['targets'][0].strip()
+                searchQuery = ''
+                for counter, inKeyword in enumerate(configurations['inKeywords']):
                     if (counter > 0):
-                        inQuery += ' OR '+out
+                        searchQuery += ' OR '+inKeyword.strip()
                     else:
-                        inQuery += ''+out
+                        searchQuery += ''+inKeyword.strip()
+                startDate = str(date.today()-timedelta(days=365))
+                endDate = str(date.today())
+                if inlcudeTimeframe:
+                    searchQuery = "from:"+targetUsername+" "+searchQuery+" since:"+startDate
+                else:
+                    searchQuery = "from:"+targetUsername+" "+searchQuery
+                # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                # print(searchQuery)
+                # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
                 if len(target['tweets']) == 0:
-                    for username in target['targets']:
-                        try:
-                            scrappedTweets = []
-                            # startDate = str(date.today()-timedelta(days=365))
-                            # endDate = str(date.today())
-                            query = "from:"+username + " " + inQuery
-                            print(">>>>>>> query", query)
-                            for counter, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
-                                if counter > 100:
-                                    break
-                                scrappedTweets.append(json.loads(tweet.json()))
-                            if len(scrappedTweets) > 0:
-                                result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}})
-                                print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
-                                return None
-                            else:
-                                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                                print("NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
-                                return None
-                        except:
-                            print("Something went wrong!!! Resetting target status")
-                            db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                    for counter, tweet in enumerate(sntwitter.TwitterSearchScraper(searchQuery).get_items()):
+                        # print(counter, tweet.rawContent)
+                        scrappedTweets.append(json.loads(tweet.json()))
+                    if len(scrappedTweets) > 0:
+                        result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}})
+                        # print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + targetUsername)
+                        return scrappedTweets
+                    else:
+                        db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                        # print("IF NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + targetUsername)
+                        return None
 
                 else:
-                    for username in target['targets']:
-                        try:
-                            scrappedTweets = []
-                            # startDate = str(date.today()-timedelta(days=365))
-                            # endDate = str(date.today())
-                            query = "from:"+username + " " + inQuery
-                            print(">>>>>>> query", query)
-                            for counter, tweet in enumerate(sntwitter.TwitterSearchScraper(query).get_items()):
-                                if counter > 100:
-                                    break
-                                scrappedTweets.append(json.loads(tweet.json()))
-                            if len(scrappedTweets) > 0:
-                                if (len(scrappedTweets) > len(target['tweets'])):
-                                    newScrappedTweets = list(filter(lambda x: len(list(filter(lambda y: y['id'] == x['id'], target['tweets']))) == 0, scrappedTweets))
-                                    if len(newScrappedTweets) > 0:
-                                        result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}})
-                                        print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
-                                        return newScrappedTweets
-                                    else:
-                                        return None
-                        except:
-                            print("Something went wrong!!! Resetting target status")
-                            db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-
+                    for counter, tweet in enumerate(sntwitter.TwitterSearchScraper(searchQuery).get_items()):
+                        # print(counter, tweet.rawContent)
+                        scrappedTweets.append(json.loads(tweet.json()))
+                    if len(scrappedTweets) > 0:
+                        if (len(scrappedTweets) > len(target['tweets'])):
+                            newScrappedTweets = list(filter(lambda x: len(list(filter(lambda y: y['id'] == x['id'], target['tweets']))) == 0, scrappedTweets))
+                            if len(newScrappedTweets) > 0:
+                                result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}})
+                                # print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + targetUsername)
+                                return newScrappedTweets
+                            else:
+                                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                                # print("ELSE NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + targetUsername)
+                                return None
                         else:
                             db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                            print("NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
-                            return None
+
+                    else:
+                        db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
+                        # print("ELSE NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + targetUsername)
+
             except Exception as e:
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print(e)
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                # print(e)
+                # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
                 return None

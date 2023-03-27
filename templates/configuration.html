@@ -30,7 +30,7 @@
                 id="likeCount"
                 name="likeCount"
                 required
-                min="1"
+                min="0"
               />
             </div>
 
@@ -43,7 +43,7 @@
                 id="retweetCount"
                 name="retweetCount"
                 required
-                min="1"
+                min="0"
               />
             </div>
 
@@ -56,7 +56,7 @@
                 id="viewCount"
                 name="viewCount"
                 required
-                min="1"
+                min="0"
               />
             </div>
 
@@ -64,7 +64,7 @@
               <label for="inKeywords">In Keywords</label>
               <input
                 type="text"
-                value="{{ context['configurations']['inKeywords']|join(', ') }}"
+                value="{{ context['configurations']['inKeywords']|join(',')}}"
                 class="form-control form-control-sm"
                 id="inKeywords"
                 name="inKeywords"
@@ -76,7 +76,7 @@
               <label for="outKeywords">Out Keywords</label>
               <input
                 type="text"
-                value="{{ context['configurations']['outKeywords']|join(', ') }}"
+                value="{{ context['configurations']['outKeywords']|join(',')}}"
                 class="form-control form-control-sm"
                 id="outKeywords"
                 name="outKeywords"
