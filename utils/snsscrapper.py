@@ -5,6 +5,9 @@ from config.db import db
 import json
 from datetime import date
 from datetime import datetime, timedelta
+from dotenv import dotenv_values
+
+envConfig = dotenv_values(".env")
 
 
 class Scrapper:
@@ -57,7 +60,7 @@ class Scrapper:
         elif (target['targetType'] == 'twitter-user'):
             try:
                 scrappedTweets = []
-                inlcudeTimeframe = True
+                inlcudeTimeframe = int(envConfig["SNS_CONFIG_INCLUDE_TIMEFRAME"]),
                 targetUsername = target['targets'][0].strip()
                 searchQuery = ''
                 for counter, inKeyword in enumerate(configurations['inKeywords']):
