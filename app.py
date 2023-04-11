@@ -25,45 +25,44 @@ env_config = dotenv_values(".env")
 
 
 def worker():
-    pass
-    # try:
-    #     user_targets = db.targets.find({})
-    #     for target in user_targets:
-    #         if target['status'] == 0:
-    #             db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
-    #             new_tweets = Scrapper.scrapKeywords(target)
-    #             if new_tweets is not None:
-    #                 if (len(new_tweets) > 0):
-    #                     content = ""
-    #                     for tweet in new_tweets:
-    #                         content += "\nTweeted By : " + tweet['user']['username'] + "\n"
-    #                         content += "\nTweet Content : " + tweet['rawContent'] + "\n"
-    #                         content += "\nLikes :" + str(tweet['likeCount']) + "\n"
-    #                         content += "\nRetweets:" + str(tweet['retweetCount']) + "\n"
-    #                         content += "\nReplies :" + str(tweet['replyCount']) + "\n"
-    #                         content += "\nLang :" + tweet['lang'] + "\n"
-    #                         content += "\nViews :" + str(tweet['viewCount']) + "\n"
-    #                 content += ""
-    #                 with app.app_context():
-    #                     msg = Message(
-    #                         "Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
-    #                     msg.body = content
-    #                     mail.send(msg)
-    #             else:
-    #                 pass
-    #         else:
-    #             print("Target already in progress.")
-    #             pass
-    #         print("Process Complete!!! for " +
-    #               str(target['_id']) + " " + target['target_type'])
-    # except Exception as exception:
-    #     app.logger.error(str(exception), exc_info=True)
+    try:
+        user_targets = db.targets.find({})
+        for target in user_targets:
+            if target['status'] == 0:
+                db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
+                new_tweets = Scrapper.scrapKeywords(target)
+                if new_tweets is not None:
+                    if (len(new_tweets) > 0):
+                        content = ""
+                        for tweet in new_tweets:
+                            content += "\nTweeted By : " + tweet['user']['username'] + "\n"
+                            content += "\nTweet Content : " + tweet['rawContent'] + "\n"
+                            content += "\nLikes :" + str(tweet['likeCount']) + "\n"
+                            content += "\nRetweets:" + str(tweet['retweetCount']) + "\n"
+                            content += "\nReplies :" + str(tweet['replyCount']) + "\n"
+                            content += "\nLang :" + tweet['lang'] + "\n"
+                            content += "\nViews :" + str(tweet['viewCount']) + "\n"
+                    content += ""
+                    with app.app_context():
+                        msg = Message(
+                            "Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
+                        msg.body = content
+                        mail.send(msg)
+                else:
+                    pass
+            else:
+                print("Target already in progress.")
+                pass
+            print("Process Complete!!! for " +
+                  str(target['_id']) + " " + target['target_type'])
+    except Exception as exception:
+        app.logger.error(str(exception), exc_info=True)
 
 
 def activateTaskScheduler():
     # db.targets.update_many({}, {'$set': {'status': 0}})
     scheduler = BackgroundScheduler(daemon=True)
-    scheduler.add_job(func=worker, trigger='interval', seconds=20)
+    scheduler.add_job(func=worker, trigger='interval', seconds=60)
     scheduler.start()
     print(">>> Scheduler started")
 
