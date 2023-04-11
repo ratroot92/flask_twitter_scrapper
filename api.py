@@ -52,7 +52,7 @@ def token_required(f):
                 return f(authUser, *args, **kwargs)
             else:
                 return Utils.UnauthorizedResponse('User not found.')
-            # data = {"_id": str(authUser["_id"]), "username": authUser["username"], "firstName": authUser["firstName"], "lastName": authUser["lastName"], "_id": authUser["_id"]}
+            # data = {"_id": str(authUser["_id"]), "username": authUser["username"], "first_name": authUser["first_name"], "last_name": authUser["last_name"], "_id": authUser["_id"]}
         except ExpiredSignatureError as e:
             return Utils.UnauthorizedResponse("Error: {}".format(str(e)))
 
@@ -72,8 +72,8 @@ def createUser(authUser):
         if reqBody is None:
             return jsonify({"success": False, 'message': 'Invalid JSON'}), 400
         user = User(
-            firstName=reqBody["firstName"],
-            lastName=reqBody["lastName"],
+            first_name=reqBody["first_name"],
+            last_name=reqBody["last_name"],
             username=reqBody["username"],
             password=reqBody["password"],
             email=reqBody["email"]
@@ -84,7 +84,7 @@ def createUser(authUser):
             user = db.users.insert_one(user.toDictionary())
             user = db.users.find_one({'_id': user.inserted_id})
             user['_id'] = str(user['_id'])
-            # data = {"_id": str(user["_id"]), "username": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]}
+            # data = {"_id": str(user["_id"]), "username": user["username"], "first_name": user["first_name"], "last_name": user["last_name"], "email": user["email"]}
             return Utils.SuccessResponse(user, "User created successfully")
         else:
             return Utils.NotFoundResponse(exists, "User already exists")
@@ -100,7 +100,7 @@ def getAllUsers(authUser):
         users = db.users.find()
         for user in users:
             data.append({"_id": str(user["_id"]), "username": user["username"],
-                        "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]})
+                        "first_name": user["first_name"], "last_name": user["last_name"], "email": user["email"]})
         return Utils.SuccessResponse(data, "All users")
     except Exception as e:
         return Utils.ErrorResponse('Someting went wrong.')
@@ -120,7 +120,7 @@ def login():
         if not user:
             return Utils.UnauthorizedResponse('Invalid credentials.')
         else:
-            data = {"_id": str(user["_id"]), "email": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]}
+            data = {"_id": str(user["_id"]), "email": user["username"], "first_name": user["first_name"], "last_name": user["last_name"], "email": user["email"]}
             token = jwt.encode({'_id': data["_id"], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
             response = make_response(jsonify({"data": data, "message": "Logged in successfully", "success": True, "token": token}), 200)
@@ -163,7 +163,7 @@ def seed():
 
 def scrapLater(exist):
     Scrapper.scrapKeywords(exist)
-    print("Process Complete!!! for "+exist['_id']+" " + exist['targetType'])
+    print("Process Complete!!! for "+exist['_id']+" " + exist['target_type'])
 
 
 @app.route('/user/targets/keywords', methods=['POST'])
@@ -171,11 +171,11 @@ def scrapLater(exist):
 def setUserTargets(authUser):
     try:
         reqBody = request.get_json()
-        if 'targetType' not in reqBody:
-            return Utils.BadRequestResponse('targetType is required.')
+        if 'target_type' not in reqBody:
+            return Utils.BadRequestResponse('target_type is required.')
 
-        if reqBody['targetType'] != 'keywords' and reqBody['targetType'] != 'twitter-hashtag' and reqBody['targetType'] != 'twitter-user':
-            return Utils.BadRequestResponse('Invalid "targetType" .')
+        if reqBody['target_type'] != 'keywords' and reqBody['target_type'] != 'twitter-hashtag' and reqBody['target_type'] != 'twitter-user':
+            return Utils.BadRequestResponse('Invalid "target_type" .')
 
         if 'targets' not in reqBody and len(reqBody['targets']) == 0:
             return Utils.BadRequestResponse('targets is required.')
@@ -188,7 +188,7 @@ def setUserTargets(authUser):
 
         exist = Target.TargetExist(reqBody)
         if not exist:
-            target = Target(targetType=reqBody["targetType"], targets=reqBody["targets"], limit=reqBody['limit'], user=authUser['_id'])
+            target = Target(target_type=reqBody["target_type"], targets=reqBody["targets"], limit=reqBody['limit'], user=authUser['_id'])
             target = db.targets.insert_one(target.toDictionary())
             target = db.targets.find_one({'_id': target.inserted_id})
             target['_id'] = str(target['_id'])
@@ -197,7 +197,7 @@ def setUserTargets(authUser):
             heavyTask.start()
             return Utils.SuccessResponse(target, "Target created successfully")
         else:
-            response = Utils.NotFoundResponse(exist, "Target Type '" + reqBody["targetType"]+"' already exists.")
+            response = Utils.NotFoundResponse(exist, "Target Type '" + reqBody["target_type"]+"' already exists.")
             return response
 
     except Exception as e:
@@ -219,11 +219,11 @@ def getUserTargets(authUser):
 def updateUserTargets(authUser):
     try:
         reqBody = request.get_json()
-        if 'targetType' not in reqBody:
-            return Utils.BadRequestResponse('targetType is required.')
+        if 'target_type' not in reqBody:
+            return Utils.BadRequestResponse('target_type is required.')
 
-        if reqBody['targetType'] != 'keywords' and reqBody['targetType'] != 'twitter-hashtag' and reqBody['targetType'] != 'twitter-user':
-            return Utils.BadRequestResponse('Invalid "targetType" .')
+        if reqBody['target_type'] != 'keywords' and reqBody['target_type'] != 'twitter-hashtag' and reqBody['target_type'] != 'twitter-user':
+            return Utils.BadRequestResponse('Invalid "target_type" .')
 
         if 'targets' not in reqBody and len(reqBody['targets']) == 0:
             return Utils.BadRequestResponse('targets is required.')
@@ -254,16 +254,16 @@ def updateUserTargets(authUser):
 def deleteUserTargets(authUser):
     try:
         reqBody = request.get_json()
-        if 'targetType' not in reqBody:
-            return Utils.BadRequestResponse('targetType is required.')
+        if 'target_type' not in reqBody:
+            return Utils.BadRequestResponse('target_type is required.')
         else:
-            userTarget = db.targets.find_one({'user': authUser['_id'], 'targetType': reqBody['targetType']})
+            userTarget = db.targets.find_one({'user': authUser['_id'], 'target_type': reqBody['target_type']})
             if userTarget:
-                result = db.targets.delete_one({'user': authUser['_id'], 'targetType': reqBody['targetType']})
+                result = db.targets.delete_one({'user': authUser['_id'], 'target_type': reqBody['target_type']})
                 if result.deleted_count == 1:
                     return Utils.SuccessResponse(reqBody, 'Target deleted successfully.')
                 else:
-                    return Utils.NotFoundResponse('Failed to delete '+reqBody['targetType']+" target.")
+                    return Utils.NotFoundResponse('Failed to delete '+reqBody['target_type']+" target.")
             else:
                 return Utils.NotFoundResponse("Target not found")
     except Exception as e:

@@ -20,8 +20,8 @@
 
           <form id="twitter-target-form" method="POST" action="/user/target/keywords">
             <div class="form-group">
-              <label for="targetType">Target Type</label>
-              <select class="form-control form-control" id="targetType" name="targetType">
+              <label for="target_type">Target Type</label>
+              <select class="form-control form-control" id="target_type" name="target_type">
                <!-- <option value="twitter-hashtag">Twitter Hashtag</option>-->
                 <option value="twitter-user">Twitter User</option>
                 <option value="keywords">Keywords</option>
@@ -32,20 +32,70 @@
               <input type="text" class="form-control form-control" id="targets" name="targets" />
               <small class="form-text text-muted">Please enter one target per line.</small>
             </div>
-           <!--  <div class="form-group">
-              <label for="limit">Limit</label>
-              <select class="form-control form-control" id="limit" name="limit">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-                <option value="100">100</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-                <option value="0">All</option>
 
-              </select>
-            </div> -->
+            <div class="form-group">
+              <label for="like_count">Likes Count </label>
+              <input
+                type="number"
+                value="{{context['configuration']['like_count']}}"
+                class="form-control form-control-sm"
+                id="like_count"
+                name="like_count"
+                required
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="retweet_count">Retweet Count</label>
+              <input
+                type="number"
+                value="{{context['configuration']['retweet_count']}}"
+                class="form-control form-control-sm"
+                id="retweet_count"
+                name="retweet_count"
+                required
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="view_count">View Count</label>
+              <input
+                type="number"
+                value="{{context['configuration']['view_count']}}"
+                class="form-control form-control-sm"
+                id="view_count"
+                name="view_count"
+                required
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="in_keywords">In Keywords</label>
+              <input
+                type="text"
+                value="{{ context['configuration']['in_keywords']|join(',')}}"
+                class="form-control form-control-sm"
+                id="in_keywords"
+                name="in_keywords"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="out_keywords">Out Keywords</label>
+              <input
+                type="text"
+                value="{{ context['configuration']['out_keywords']|join(',')}}"
+                class="form-control form-control-sm"
+                id="out_keywords"
+                name="out_keywords"
+                required
+              />
+            </div>
+
            <div class="text-center">
             <button type="submit" class="btn btn-success">Submit</button>
            </div>
@@ -57,7 +107,7 @@
   
   <div class="container mx-auto">
     <div class="row d-flex align-items-center justify-content-center">
-      <div class="col-md-10">
+      <div class="col-md-12">
         <div class="twitter-data-body" style="padding-top: 30px">
           <h2 class="text-center">Twitter Data</h2>
           <table class="table table-striped" id="myTable">
@@ -67,7 +117,13 @@
                 <th scope="col">Target Type</th>
                 <th scope="col">Target Keywords</th>
                 <th scope="col">Limit</th>
+                <th scope="col">Like Count</th>
+                <th scope="col">Retweet Count</th>
+                <th scope="col">View Count</th>
+                <th scope="col">In Kyewords</th>
+                <th scope="col">Out Kyewords</th>
                 <th scope="col">View</th>
+                <th scope="col">Edit</th>
                 <th scope="col">Delete</th>
   
               </tr>
@@ -77,17 +133,28 @@
               {% for target in context['targets'] %}
               <tr>
                 <th scope="row">{{loop.index}}</th>
-                <td>{{ target['targetType'] }}</td>
+                <td>{{ target['target_type'] }}</td>
                 <td>
                   {% for target in target['targets']  %}
                  <span> {{target}}</span>
                    {% endfor%}
                   </td>
                 <td>{{ target['limit'] }}</td>
+                <td>{{ target['configuration']['like_count'] }}</td>
+                <td>{{ target['configuration']['retweet_count'] }}</td>
+                <td>{{ target['configuration']['like_count'] }}</td>
+                <td> 
+                  {{ target['configuration']['in_keywords']|join(',')}}
+                </td>
+                <td> 
+                  {{ target['configuration']['out_keywords']|join(',')}}
+                </td>
                 <td><a class="btn btn-sm btn-outline-success" type="button"
-                    href="{{url_for('viewUserTarget',targetId=target['_id'])}}"><i class="fas fa-eye"></i><a></td>
+                    href="{{url_for('view_user_details',target_id=target['_id'])}}"><i class="fas fa-eye"></i><a></td>
+                    <td><a class="btn btn-sm btn-outline-success" type="button"
+                        href="{{url_for('edit_user_target',target_id=target['_id'])}}"><i class="fas fa-pencil"></i><a></td>
                 <td><a class="btn btn-sm btn-outline-danger" type="button"
-                    href="{{url_for('deleteUserTarget',targetId=target['_id'])}}"><i class="fas fa-trash"></i><a></td>
+                    href="{{url_for('delete_target',target_id=target['_id'])}}"><i class="fas fa-trash"></i><a></td>
               </tr>
               {% endfor %}
               {% endif %}

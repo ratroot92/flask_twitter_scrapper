@@ -19,17 +19,17 @@ from datetime import datetime, timedelta
 from dotenv import dotenv_values
 from flask import send_from_directory
 
-envConfig = dotenv_values(".env")
+env_config = dotenv_values(".env")
 
 
 def worker():
     try:
         targets = db.targets.find({})
         for target in targets:
-            configurations = db.configurations.find_one({'user': str(target['user'])})
+            configuration = db.configuration.find_one({'user': str(target['user'])})
             if target['status'] == 0:
                 db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
-                newTweets = Scrapper.scrapKeywords(target, configurations)
+                newTweets = Scrapper.scrapKeywords(target, configuration)
                 if newTweets is not None:
                     if (len(newTweets) > 0):
                         content = ""
@@ -37,11 +37,11 @@ def worker():
                             content += "Tweeted By : "+tweet['username']
                             content += "Tweet Content : "+tweet['rawContent']
                             content += "Tweet Content : "+tweet['rawContent']
-                            content += "Likes :" + tweet['likeCount']
-                            content += "Retweets:" + tweet['retweetCount']
+                            content += "Likes :" + tweet['like_count']
+                            content += "Retweets:" + tweet['retweet_count']
                             content += "Replies :" + tweet['replyCount']
                             content += "Lang :" + tweet['lang']
-                            content += "Views :" + tweet['viewCount']
+                            content += "Views :" + tweet['view_count']
                             content += "Lang :" + tweet['lang']
                     with app.app_context():
                         msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
@@ -52,7 +52,7 @@ def worker():
             else:
                 print("Target already in progress.")
                 pass
-            print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
+            print("Process Complete!!! for "+str(target['_id'])+" " + target['target_type'])
     except Exception as e:
         app.logger.error(str(e), exc_info=True)
 
@@ -95,9 +95,9 @@ def protectedRoute(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         isAuthenticated = session.get('isAuthenticated')
-        userId = session.get('userId')
-        if isAuthenticated and userId:
-            return func(userId, *args, **kwargs)
+        user_id = session.get('user_id')
+        if isAuthenticated and user_id:
+            return func(user_id, *args, **kwargs)
         else:
             return redirect(url_for('login'))
     return wrapper
@@ -107,9 +107,9 @@ def unprotectedRoute(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         isAuthenticated = session.get('isAuthenticated')
-        userId = session.get('userId')
-        if isAuthenticated and userId:
-            return redirect(url_for('getDashboardPage'))
+        user_id = session.get('user_id')
+        if isAuthenticated and user_id:
+            return redirect(url_for('get_dashboard_page'))
         else:
             return func(*args, **kwargs)
 
@@ -139,11 +139,11 @@ def userLogin():
         user = db.users.find_one({'email': email, 'password': password})
         if user:
             session['isAuthenticated'] = True
-            session['userId'] = str(user['_id'])
+            session['user_id'] = str(user['_id'])
             session['username'] = user['username']
             session['email'] = user['email']
 
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
         else:
             flash('Invalid Credentials.')
             return redirect(url_for('login'))
@@ -160,155 +160,155 @@ def userLogin():
 
 @app.route('/dashboard', methods=['GET'])
 @protectedRoute
-def getDashboardPage(userId):
-    targets = db.targets.find({'user': ObjectId(userId)})
+def get_dashboard_page(user_id):
+    targets = db.targets.find({'user': ObjectId(user_id)})
     context = {'targets': targets}
     return render_template('dashboard.html', context=context)
 
 
-@app.route('/configurations', methods=['GET'])
+@app.route('/configuration', methods=['GET'])
 @protectedRoute
-def getConfigPage(userId):
-    configurations = db.configurations.find_one({'user': userId})
-    context = {'configurations': configurations}
+def get_edit_target_page(user_id):
+    configuration = db.configuration.find_one({'user': user_id})
+    context = {'configuration': configuration}
     return render_template('configuration.html', context=context)
 
 
 @app.route('/user/target/configuration', methods=['POST'])
 @protectedRoute
-def setConfgurations(userId):
+def setConfgurations(user_id):
     try:
-        likeCount = int(request.form['likeCount'])
-        retweetCount = int(request.form['retweetCount'])
-        viewCount = int(request.form['viewCount'])
-        inKeywords = request.form['inKeywords'].split(",")
-        outKeywords = request.form['outKeywords'].split(",")
-        if likeCount is not None and retweetCount is not None and viewCount is not None and len(inKeywords) > 0 and len(outKeywords) > 0:
-            trimedInKeywords = []
-            trimedOutKeywords = []
+        like_count = int(request.form['like_count'])
+        retweet_count = int(request.form['retweet_count'])
+        view_count = int(request.form['view_count'])
+        in_keywords = request.form['in_keywords'].split(",")
+        out_keywords = request.form['out_keywords'].split(",")
+        if like_count is not None and retweet_count is not None and view_count is not None and len(in_keywords) > 0 and len(out_keywords) > 0:
+            trimed_in_keywords = []
+            trimed_out_keywords = []
 
-            for keyword in inKeywords:
-                trimedInKeywords.append(keyword.strip())
-            for keyword in outKeywords:
-                trimedOutKeywords.append(keyword.strip())
-            db.configurations.update_one({'user': userId}, {'$set': {'likeCount': likeCount, 'retweetCount': retweetCount,
-                                                                     'viewCount': viewCount, 'inKeywords': inKeywords, 'outKeywords': outKeywords, }})
+            for keyword in in_keywords:
+                trimed_in_keywords.append(keyword.strip())
+            for keyword in out_keywords:
+                trimed_out_keywords.append(keyword.strip())
+            db.configuration.update_one({'user': user_id}, {'$set': {'like_count': like_count, 'retweet_count': retweet_count,
+                                                                     'view_count': view_count, 'in_keywords': in_keywords, 'out_keywords': out_keywords, }})
         flash('TargetConfguration updated successfully...')
-        return redirect(url_for('getConfigPage'))
+        return redirect(url_for('get_edit_target_page'))
     except Exception as e:
         print('error.....', e)
         flash('TargetConfguration creation failed...')
-        return redirect(url_for('getConfigPage'))
+        return redirect(url_for('get_edit_target_page'))
 
 
 @app.route('/register', methods=['GET'])
 @unprotectedRoute
-def getRegisterPage():
+def get_registertion_page():
     return render_template('register.html')
 
 
 @app.route('/register', methods=['POST'])
 @unprotectedRoute
-def registerUser():
+def register_user():
     try:
-        firstName = request.form['firstName']
-        lastName = request.form['lastName']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
         username = request.form['username']
         password = request.form['password']
-        confirmPassword = request.form['confirmPassword']
+        confirm_password = request.form['confirm_password']
         email = request.form['email']
-        if password == confirmPassword:
-            if firstName and lastName and username and password and confirmPassword and email:
+        if password == confirm_password:
+            if first_name and last_name and username and password and confirm_password and email:
                 exist = db.users.find_one({'email': email})
                 if not exist:
-                    user = User(firstName=firstName, lastName=lastName, username=username, password=password, email=email)
+                    user = User(first_name=first_name, last_name=last_name, username=username, password=password, email=email)
                     user = db.users.insert_one(user.toDictionary())
                     userConfigurations = Confgiuration(
-                        likeCount=int(envConfig["TARGET_CONFIG_LIKES_COUNT"]),
-                        retweetCount=int(envConfig["TARGET_CONFIG_RETWEET_COUNT"]),
-                        viewCount=int(envConfig["TARGET_CONFIG_VIEW_COUNT"]),
-                        inKeywords=envConfig["TARGET_CONFIG_VIEW_IN_KEYWQORDS"].split(","),
-                        outKeywords=envConfig["TARGET_CONFIG_VIEW_OUT_KEYWQORDS"].split(","),
+                        like_count=int(env_config["TARGET_CONFIG_LIKES_COUNT"]),
+                        retweet_count=int(env_config["TARGET_CONFIG_RETWEET_COUNT"]),
+                        view_count=int(env_config["TARGET_CONFIG_VIEW_COUNT"]),
+                        in_keywords=env_config["TARGET_CONFIG_VIEW_IN_KEYWQORDS"].split(","),
+                        out_keywords=env_config["TARGET_CONFIG_VIEW_OUT_KEYWQORDS"].split(","),
                         user=str(user.inserted_id))
-                    db.configurations.insert_one(userConfigurations.toDictionary())
+                    db.configuration.insert_one(userConfigurations.toDictionary())
                     flash('User created sucessfully.')
                     return redirect(url_for('login'))
                 else:
                     flash('User already exists.')
-                    return redirect(url_for('getRegisterPage'))
+                    return redirect(url_for('get_registertion_page'))
         else:
             flash('Password mismatch.')
-            return redirect(url_for('getRegisterPage'))
+            return redirect(url_for('get_registertion_page'))
     except Exception as e:
         app.logger.error(str(e), exc_info=True)
         # return "An error occurred", 500
         flash('User creation failed...')
-        return redirect(url_for('getRegisterPage'))
+        return redirect(url_for('get_registertion_page'))
 
 
 @app.route('/', methods=['GET'])
 @unprotectedRoute
-def getHomePage():
+def get_homepage():
     return render_template('index.html')
 
 
 @app.route('/logout', methods=['GET'])
-def logoutUser():
+def logout_user():
     session['isAuthenticated'] = False
-    session['userId'] = ''
+    session['user_id'] = ''
     session['username'] = ''
     session['email'] = ''
     return redirect(url_for('login'))
 
 
-@app.route('/user/target/view/<targetId>', methods=['GET'])
+@app.route('/user/target/view/<target_id>', methods=['GET'])
 @protectedRoute
-def viewUserTarget(userId, targetId):
-    if targetId:
-        target = db.targets.find_one({'_id': ObjectId(targetId)})
+def view_user_details(user_id, target_id):
+    if target_id:
+        target = db.targets.find_one({'_id': ObjectId(target_id)})
         if target:
             context = {'target': target}
             return render_template('detail.html', context=context)
     else:
         flash('Target not found.')
-        return redirect('getDashboardPage')
+        return redirect('get_dashboard_page')
 
 
-@app.route('/user/target/delete/<targetId>', methods=['GET'])
+@app.route('/user/target/delete/<target_id>', methods=['GET'])
 @protectedRoute
-def deleteUserTarget(userId, targetId):
-    if targetId:
-        result = db.targets.delete_one({'_id': ObjectId(targetId)})
+def delete_target(user_id, target_id):
+    if target_id:
+        result = db.targets.delete_one({'_id': ObjectId(target_id)})
         if result.deleted_count == 1:
             flash('Target deleted successfully.')
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
     else:
         flash('Target not found.')
-        return redirect('getDashboardPage')
+        return redirect('get_dashboard_page')
 
 
 @app.route('/user/target/keywords', methods=['POST'])
 @protectedRoute
-def addUserTarget(userId):
+def add_target(user_id):
     try:
-        targetType = request.form['targetType']
+        target_type = request.form['target_type']
         targets = request.form['targets']
         if not targets:
             flash('Targets are required.')
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
         targets = targets.split(',')
         if (len(targets)):
             for target in targets:
                 target = target.strip()
-            user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets,
+            user = db.users.find_one({'_id': ObjectId(user_id)})
+            target = Target(target_type=target_type, targets=targets,
                             limit=int(100000), user=user['_id'])
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
-        return redirect(url_for('getDashboardPage'))
+        return redirect(url_for('get_dashboard_page'))
     except Exception as e:
         flash(str(e))
-        return redirect(url_for('getDashboardPage'))
+        return redirect(url_for('get_dashboard_page'))
 
 
 app.run()

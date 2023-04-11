@@ -3,15 +3,15 @@ from config.db import db
 
 class User():
 
-    def __init__(self, firstName, lastName, email, password, username):
-        self.firstName = firstName
-        self.lastName = lastName
+    def __init__(self, first_name, last_name, email, password, username):
+        self.first_name = first_name
+        self.last_name = last_name
         self.username = username
         self.email = email
         self.password = password
 
     def __str__(self):
-        return f" >>>  User({self.username},{self.email},{self.firstName},{self.lastName},{self.password})"
+        return f" >>>  User({self.username},{self.email},{self.first_name},{self.last_name},{self.password})"
 
     def __repr__(self):
         rep = 'User(' + self.username + ',' + str(self.email) + ')'
@@ -29,8 +29,8 @@ class User():
     def serialize(self):
         return {
             '_id': str(self._id),
-            'firstName': self.firstName,
-            'lastName': self.lastName,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
             'username': self.username,
             'email': self.email,
             'password': self.password,
@@ -38,8 +38,8 @@ class User():
 
     def toDictionary(self):
         return {
-            'firstName': self.firstName,
-            'lastName': self.lastName,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
             'username': self.username,
             'email': self.email,
             'password': self.password,
@@ -53,22 +53,22 @@ class User():
     def seed():
         db.users.delete_many({})
         user1 = User(
-            firstName='alice',
-            lastName='stone',
+            first_name='alice',
+            last_name='stone',
             username='alice',
             password='pakistan123>',
             email='alice@gmail.com'
         )
         user2 = User(
-            firstName='bob',
-            lastName='stone',
+            first_name='bob',
+            last_name='stone',
             username='bob',
             password='pakistan123>',
             email='bob@gmail.com'
         )
         user3 = User(
-            firstName='carson',
-            lastName='stone',
+            first_name='carson',
+            last_name='stone',
             username='carson',
             password='pakistan123>',
             email='carson@gmail.com'
@@ -79,5 +79,5 @@ class User():
         users = db.users.find()
         data = []
         for user in users:
-            data.append({"_id": str(user["_id"]), "username": user["username"], "firstName": user["firstName"], "lastName": user["lastName"], "email": user["email"]})
+            data.append({"_id": str(user["_id"]), "username": user["username"], "first_name": user["first_name"], "last_name": user["last_name"], "email": user["email"]})
         return data

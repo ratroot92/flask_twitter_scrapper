@@ -1,6 +1,9 @@
+
+# pylint: wrong-import-order,unused-import
+# pylint:  unused-import
+
 #!flask/bin/python
 from flask import Flask, session,  render_template, redirect, request, session, redirect, url_for, request,  flash
-from pymongo import MongoClient
 from bson.objectid import ObjectId
 from models.user import User
 from models.target import Target
@@ -18,48 +21,47 @@ from datetime import date
 from datetime import datetime, timedelta
 from dotenv import dotenv_values
 from flask import send_from_directory
-
-envConfig = dotenv_values(".env")
+env_config = dotenv_values(".env")
 
 
 def worker():
-    try:
-        targets = db.targets.find({})
-        for target in targets:
-            configurations = db.configurations.find_one({'user': str(target['user'])})
-            targetUsername = target['targets'][0].strip()
-            if target['status'] == 0:
-                db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
-                newTweets = Scrapper.scrapKeywords(target, configurations)
-                if newTweets is not None:
-                    if (len(newTweets) > 0):
-                        content = ""
-                        for tweet in newTweets:
-                            # content = "Alert generated!!! against target "+targetUsername
-                            content += "\nTweeted By : "+tweet['user']['username']+"\n"
-                            content += "\nTweet Content : "+tweet['rawContent']+"\n"
-                            content += "\nLikes :" + str(tweet['likeCount'])+"\n"
-                            content += "\nRetweets:" + str(tweet['retweetCount'])+"\n"
-                            content += "\nReplies :" + str(tweet['replyCount'])+"\n"
-                            content += "\nLang :" + tweet['lang']+"\n"
-                            content += "\nViews :" + str(tweet['viewCount'])+"\n"
-                    content += ""
-                    with app.app_context():
-                        msg = Message("Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
-                        msg.body = content
-                        mail.send(msg)
-                else:
-                    pass
-            else:
-                print("Target already in progress.")
-                pass
-            print("Process Complete!!! for "+str(target['_id'])+" " + target['targetType'])
-    except Exception as e:
-        app.logger.error(str(e), exc_info=True)
+    pass
+    # try:
+    #     user_targets = db.targets.find({})
+    #     for target in user_targets:
+    #         if target['status'] == 0:
+    #             db.targets.update_one({'_id': target['_id']}, {'$set': {'status': 1}, })
+    #             new_tweets = Scrapper.scrapKeywords(target)
+    #             if new_tweets is not None:
+    #                 if (len(new_tweets) > 0):
+    #                     content = ""
+    #                     for tweet in new_tweets:
+    #                         content += "\nTweeted By : " + tweet['user']['username'] + "\n"
+    #                         content += "\nTweet Content : " + tweet['rawContent'] + "\n"
+    #                         content += "\nLikes :" + str(tweet['likeCount']) + "\n"
+    #                         content += "\nRetweets:" + str(tweet['retweetCount']) + "\n"
+    #                         content += "\nReplies :" + str(tweet['replyCount']) + "\n"
+    #                         content += "\nLang :" + tweet['lang'] + "\n"
+    #                         content += "\nViews :" + str(tweet['viewCount']) + "\n"
+    #                 content += ""
+    #                 with app.app_context():
+    #                     msg = Message(
+    #                         "Alert", sender="maliksblr92@gmail.com", recipients=["maliksblr92@gmail.com"])
+    #                     msg.body = content
+    #                     mail.send(msg)
+    #             else:
+    #                 pass
+    #         else:
+    #             print("Target already in progress.")
+    #             pass
+    #         print("Process Complete!!! for " +
+    #               str(target['_id']) + " " + target['target_type'])
+    # except Exception as exception:
+    #     app.logger.error(str(exception), exc_info=True)
 
 
 def activateTaskScheduler():
-    db.targets.update_many({}, {'$set': {'status': 0}})
+    # db.targets.update_many({}, {'$set': {'status': 0}})
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(func=worker, trigger='interval', seconds=20)
     scheduler.start()
@@ -96,9 +98,9 @@ def protectedRoute(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         isAuthenticated = session.get('isAuthenticated')
-        userId = session.get('userId')
-        if isAuthenticated and userId:
-            return func(userId, *args, **kwargs)
+        user_id = session.get('user_id')
+        if isAuthenticated and user_id:
+            return func(user_id, *args, **kwargs)
         else:
             return redirect(url_for('login'))
     return wrapper
@@ -108,15 +110,14 @@ def unprotectedRoute(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         isAuthenticated = session.get('isAuthenticated')
-        userId = session.get('userId')
-        if isAuthenticated and userId:
-            return redirect(url_for('getDashboardPage'))
+        user_id = session.get('user_id')
+        if isAuthenticated and user_id:
+            return redirect(url_for('get_dashboard_page'))
         else:
             return func(*args, **kwargs)
 
     return wrapper
 
-#     return wrapper
 
 
 # if __name__ == '__main__':
@@ -140,11 +141,10 @@ def userLogin():
         user = db.users.find_one({'email': email, 'password': password})
         if user:
             session['isAuthenticated'] = True
-            session['userId'] = str(user['_id'])
+            session['user_id'] = str(user['_id'])
             session['username'] = user['username']
             session['email'] = user['email']
-
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
         else:
             flash('Invalid Credentials.')
             return redirect(url_for('login'))
@@ -161,157 +161,246 @@ def userLogin():
 
 @app.route('/dashboard', methods=['GET'])
 @protectedRoute
-def getDashboardPage(userId):
-    targets = db.targets.find({'user': ObjectId(userId)})
-    context = {'targets': targets}
+def get_dashboard_page(user_id):
+    targets = db.targets.find({'user': ObjectId(user_id)})
+    configuration = {
+        "like_count": int(env_config["TARGET_CONFIG_LIKES_COUNT"]),
+        "retweet_count": int(env_config["TARGET_CONFIG_RETWEET_COUNT"]),
+        "view_count": int(env_config["TARGET_CONFIG_VIEW_COUNT"]),
+        "in_keywords": env_config["TARGET_CONFIG_VIEW_IN_KEYWQORDS"].split(","),
+        "out_keywords": env_config["TARGET_CONFIG_VIEW_OUT_KEYWQORDS"].split(","),
+    }
+    context = {'targets': targets, 'configuration': configuration}
     return render_template('dashboard.html', context=context)
 
 
-@app.route('/configurations', methods=['GET'])
-@protectedRoute
-def getConfigPage(userId):
-    configurations = db.configurations.find_one({'user': userId})
-    context = {'configurations': configurations}
-    return render_template('configuration.html', context=context)
 
 
-@app.route('/user/target/configuration', methods=['POST'])
+    
+@app.route('/user/target/edit/<target_id>', methods=['GET'])
 @protectedRoute
-def setConfgurations(userId):
+def edit_user_target(user_id, target_id):
     try:
-        likeCount = int(request.form['likeCount'])
-        retweetCount = int(request.form['retweetCount'])
-        viewCount = int(request.form['viewCount'])
-        inKeywords = request.form['inKeywords'].split(",")
-        outKeywords = request.form['outKeywords'].split(",")
-        if likeCount is not None and retweetCount is not None and viewCount is not None and len(inKeywords) > 0 and len(outKeywords) > 0:
-            trimedInKeywords = []
-            trimedOutKeywords = []
+        if target_id:
+            target = db.targets.find_one({'_id': ObjectId(target_id)})
+            if target:
+                return render_template('configuration.html', target=target)
+            else:
+                flash('Target not found.')
+                return redirect(url_for('get_dashboard_page'))
+        else:
+            flash('Target not found.')
+            return redirect(url_for('get_dashboard_page'))
+    except Exception as exception:
+        return redirect(url_for('get_dashboard_page'))
+    
+    
+    
+@app.route('/user/target/edit/<target_id>', methods=['POST'])
+@protectedRoute
+def edit_target_configuration(user_id,target_id):
 
-            for keyword in inKeywords:
-                trimedInKeywords.append(keyword.strip())
-            for keyword in outKeywords:
-                trimedOutKeywords.append(keyword.strip())
-            db.configurations.update_one({'user': userId}, {'$set': {'likeCount': likeCount, 'retweetCount': retweetCount,
-                                                                     'viewCount': viewCount, 'inKeywords': inKeywords, 'outKeywords': outKeywords, }})
-        flash('TargetConfguration updated successfully...')
-        return redirect(url_for('getConfigPage'))
-    except Exception as e:
-        print('error.....', e)
-        flash('TargetConfguration creation failed...')
-        return redirect(url_for('getConfigPage'))
+    try:  
+        like_count = int(request.form['like_count'])
+        if not like_count:
+            flash('"like_count" is required.')
+            return redirect('/user/target/edit/' + str(target_id))
+        retweet_count = int(request.form['retweet_count'])
+        if not retweet_count:
+            flash('"retweet_count" is required.')
+            return redirect('/user/target/edit/' + str(target_id))
+        view_count = int(request.form['view_count'])
+        if not view_count:
+            flash('"view_count" is required.')
+            return redirect('/user/target/edit/' + str(target_id))
+        view_count = int(request.form['view_count'])
+        if not view_count:
+            flash('"view_count" is required.')
+            return redirect('/user/target/edit/' + str(target_id))
+        in_keywords = request.form['in_keywords'].split(",")
+        if len(in_keywords) < 1:
+            flash('"in_keywords" is required.')
+            return redirect(url_for('get_dashboard_page'))
+        out_keywords = request.form['out_keywords'].split(",")
+        if len(out_keywords) < 1:
+            flash('"out_keywords" is required.')
+            return redirect(url_for('get_dashboard_page'))
+        
+        if len(in_keywords) > 0 and len(out_keywords) > 0:
+            trimed_in_keywords = []
+            trimed_out_keywords = []
+            for keyword in in_keywords:
+                trimed_in_keywords.append(keyword.strip())
+            for keyword in out_keywords:
+                trimed_out_keywords.append(keyword.strip())
+            update=db.targets.update_one({'_id': ObjectId(target_id)}, 
+                                  {'$set': {
+                                    'configuration.like_count': like_count,
+                                    'configuration.retweet_count': retweet_count,
+                                    'configuration.view_count': view_count,
+                                    'configuration.in_keywords': trimed_in_keywords, 
+                                    'configuration.out_keywords': trimed_out_keywords, 
+                                    'tweets': [],
+                                    'status': 0
+                                       }, 
+                                  })
+            print("update",update)
+                               
+        flash('Target Confguration updated successfully...')
+        return redirect('/user/target/edit/' + str(target_id))
+    except Exception as exception:
+        print('error.....', exception)
+        flash('Failed to update target configurations.')
+        return redirect('/user/target/edit/' + str(target_id))
 
 
 @app.route('/register', methods=['GET'])
 @unprotectedRoute
-def getRegisterPage():
+def get_registertion_page():
     return render_template('register.html')
 
 
 @app.route('/register', methods=['POST'])
 @unprotectedRoute
-def registerUser():
+def register_user():
     try:
-        firstName = request.form['firstName']
-        lastName = request.form['lastName']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
         username = request.form['username']
         password = request.form['password']
-        confirmPassword = request.form['confirmPassword']
+        confirm_password = request.form['confirm_password']
         email = request.form['email']
-        if password == confirmPassword:
-            if firstName and lastName and username and password and confirmPassword and email:
+        if password == confirm_password:
+            if first_name and last_name and username and password and confirm_password and email:
                 exist = db.users.find_one({'email': email})
                 if not exist:
-                    user = User(firstName=firstName, lastName=lastName, username=username, password=password, email=email)
+                    user = User(first_name=first_name, last_name=last_name, username=username, password=password, email=email)
                     user = db.users.insert_one(user.toDictionary())
-                    userConfigurations = Confgiuration(
-                        likeCount=int(envConfig["TARGET_CONFIG_LIKES_COUNT"]),
-                        retweetCount=int(envConfig["TARGET_CONFIG_RETWEET_COUNT"]),
-                        viewCount=int(envConfig["TARGET_CONFIG_VIEW_COUNT"]),
-                        inKeywords=envConfig["TARGET_CONFIG_VIEW_IN_KEYWQORDS"].split(","),
-                        outKeywords=envConfig["TARGET_CONFIG_VIEW_OUT_KEYWQORDS"].split(","),
-                        user=str(user.inserted_id))
-                    db.configurations.insert_one(userConfigurations.toDictionary())
                     flash('User created sucessfully.')
                     return redirect(url_for('login'))
                 else:
                     flash('User already exists.')
-                    return redirect(url_for('getRegisterPage'))
+                    return redirect(url_for('get_registertion_page'))
         else:
             flash('Password mismatch.')
-            return redirect(url_for('getRegisterPage'))
-    except Exception as e:
-        app.logger.error(str(e), exc_info=True)
-        # return "An error occurred", 500
+            return redirect(url_for('get_registertion_page'))
+    except Exception as exception:
+        app.logger.error(str(exception), exc_info=True)
         flash('User creation failed...')
-        return redirect(url_for('getRegisterPage'))
+        return redirect(url_for('get_registertion_page'))
 
 
 @app.route('/', methods=['GET'])
 @unprotectedRoute
-def getHomePage():
+def get_homepage():
     return render_template('index.html')
 
 
 @app.route('/logout', methods=['GET'])
-def logoutUser():
+def logout_user():
     session['isAuthenticated'] = False
-    session['userId'] = ''
+    session['user_id'] = ''
     session['username'] = ''
     session['email'] = ''
     return redirect(url_for('login'))
 
 
-@app.route('/user/target/view/<targetId>', methods=['GET'])
+@app.route('/user/target/view/<target_id>', methods=['GET'])
 @protectedRoute
-def viewUserTarget(userId, targetId):
-    if targetId:
-        target = db.targets.find_one({'_id': ObjectId(targetId)})
+def view_user_details(user_id, target_id):
+    if target_id:
+        target = db.targets.find_one({'_id': ObjectId(target_id)})
         if target:
             context = {'target': target}
             return render_template('detail.html', context=context)
     else:
         flash('Target not found.')
-        return redirect('getDashboardPage')
+        return redirect(url_for('get_dashboard_page'))
+    
 
 
-@app.route('/user/target/delete/<targetId>', methods=['GET'])
+
+@app.route('/user/target/delete/<target_id>', methods=['GET'])
 @protectedRoute
-def deleteUserTarget(userId, targetId):
-    if targetId:
-        result = db.targets.delete_one({'_id': ObjectId(targetId)})
+def delete_target(user_id, target_id):
+    if target_id:
+        result = db.targets.delete_one({'_id': ObjectId(target_id)})
         if result.deleted_count == 1:
             flash('Target deleted successfully.')
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
     else:
         flash('Target not found.')
-        return redirect('getDashboardPage')
+        return redirect(url_for('get_dashboard_page'))
 
 
 @app.route('/user/target/keywords', methods=['POST'])
 @protectedRoute
-def addUserTarget(userId):
+def add_target(user_id):
     try:
-        targetType = request.form['targetType']
+        like_count = int(request.form['like_count'])
+        if not like_count:
+            flash('"like_count" is required.')
+            return redirect(url_for('get_dashboard_page'))
+        retweet_count = int(request.form['retweet_count'])
+
+        if not retweet_count:
+            flash('"retweet_count" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
+        view_count = int(request.form['view_count'])
+        if not view_count:
+            flash('"view_count" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
+        in_keywords = request.form['in_keywords'].split(",")
+        if len(in_keywords) < 1:
+            flash('"in_keywords" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
+        out_keywords = request.form['out_keywords'].split(",")
+        if len(out_keywords) < 1:
+            flash('"out_keywords" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
+        target_type = request.form['target_type']
+        if not target_type:
+            flash('"target_type" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
         targets = request.form['targets']
         if not targets:
-            flash('Targets are required.')
-            return redirect(url_for('getDashboardPage'))
+            flash('Twitter "target" is required.')
+            return redirect(url_for('get_dashboard_page'))
+
         targets = targets.split(',')
+        if (len(targets) < 1):
+            flash('target is required.')
+            return redirect(url_for('get_dashboard_page'))
+
         if (len(targets) > 1):
             flash('Only one target can be set.')
-            return redirect(url_for('getDashboardPage'))
+            return redirect(url_for('get_dashboard_page'))
+
         if (len(targets)):
             for target in targets:
                 target = target.strip()
-            user = db.users.find_one({'_id': ObjectId(userId)})
-            target = Target(targetType=targetType, targets=targets, limit=int(100000), user=user['_id'])
+            user = db.users.find_one({'_id': ObjectId(user_id)})
+            configuration = {
+                "like_count": like_count,
+                "retweet_count": retweet_count,
+                "view_count": view_count,
+                "in_keywords": in_keywords,
+                "out_keywords": out_keywords,
+            }
+            """target_type, targets, user, limit, configuration, tweets=[], status=0,"""
+            target = Target(target_type, targets,
+                            user['_id'], int(100000), configuration)
             target = db.targets.insert_one(target.toDictionary())
             flash('Target created successfully!')
-        return redirect(url_for('getDashboardPage'))
-    except Exception as e:
-        flash(str(e))
-        return redirect(url_for('getDashboardPage'))
+        return redirect(url_for('get_dashboard_page'))
+    except Exception as exception:
+        flash(str(exception))
+        return redirect(url_for('get_dashboard_page'))
 
 
 app.run()

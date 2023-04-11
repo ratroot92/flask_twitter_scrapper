@@ -1,5 +1,5 @@
 <!-- {% if context['target'] %}
-<p>Target Type : {{context['target']['targetType']}}</p>
+<p>Target Type : {{context['target']['target_type']}}</p>
 <p>Targets : {{context['target']['targets']}}</p>
 <p>Limit : {{context['target']['limit']}}</p>
 
@@ -25,7 +25,7 @@
         <div class="card-body">
           <h4 class="card-title">Target Details</h4>
           <p class="card-text">
-            Target Type: {{context['target']['targetType']}}
+            Target Type: {{context['target']['target_type']}}
           </p>
           <p class="card-text">Targets:
             <ul class="list list-inline">
@@ -46,13 +46,13 @@
             <div class="tweet-card card mb-3">
               <div class="card-header">
                 <div class="row">
-                  <div class="col-md-3" style="font-size:9px;">Likes : {{tweet['likeCount']}}</div>
-                  <div class="col-md-3" style="font-size:9px;">Retweets: {{tweet['retweetCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Likes : {{tweet['like_count']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Retweets: {{tweet['retweet_count']}}</div>
                   <div class="col-md-3" style="font-size:9px;">Replies : {{tweet['replyCount']}}</div>
                   <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
                 </div>
                 <div class="row">
-                  <div class="col-md-3" style="font-size:9px;">Views : {{tweet['viewCount']}}</div>
+                  <div class="col-md-3" style="font-size:9px;">Views : {{tweet['view_count']}}</div>
                   <div class="col-md-3" style="font-size:9px;">Loc:{% if tweet['user']%} {{tweet['user']['location'] or "N/A"}}{% endif %} </div>
                   <div class="col-md-3" style="font-size:9px;">Verified : {% if tweet['user']%}{{tweet['user']['verified']}}{% endif %}</div>
                   <div class="col-md-3" style="font-size:9px;">Lang : {{tweet['lang']}}</div>
@@ -80,7 +80,8 @@
              
               
                 <p class="card-text">
-                  <small class="text-muted">{{ tweet['created_at'] }}</small>
+                  <small class="text-muted">
+                    {{ tweet['created_at'] }}</small>
                 </p>
               </div>
             </div>

@@ -13,8 +13,8 @@ class Scrapper:
         pass
 
     @staticmethod
-    def scrapKeywords(target, configurations):
-        if (target['targetType'] == 'keywords'):
+    def scrapKeywords(target, configuration):
+        if (target['target_type'] == 'keywords'):
             if len(target['tweets']) == 0:
                 for keyword in target['targets']:
                     tweets = []
@@ -29,7 +29,7 @@ class Scrapper:
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
+                        print(">>> Scheduled!!! No new tweets were found for  " + target['target_type'] + " against keyword " + keyword)
                         return None
 
             else:
@@ -51,13 +51,13 @@ class Scrapper:
                         return None
                     else:
                         db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                        print(">>> Scheduled!!! No new tweets were found for  " + target['targetType'] + " against keyword " + keyword)
+                        print(">>> Scheduled!!! No new tweets were found for  " + target['target_type'] + " against keyword " + keyword)
                         return None
 
-        elif (target['targetType'] == 'twitter-user'):
+        elif (target['target_type'] == 'twitter-user'):
             try:
                 searchQuery = ''
-                for counter, inKeword in enumerate(configurations['inKeywords']):
+                for counter, inKeword in enumerate(configuration['in_keywords']):
                     if (counter > 0):
                         searchQuery += ' OR '+inKeword.strip()
                     else:
@@ -79,11 +79,11 @@ class Scrapper:
                             print(">>>>>>> IF queryResults New ", len(scrappedTweets), " tweets  found...")
                             if len(scrappedTweets) > 0:
                                 result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': scrappedTweets}}})
-                                print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
+                                print(f"First Entry !!! Matched {result.matched_count} documents for  " + target['target_type'] + " against username " + username)
                                 return None
                             else:
                                 db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                                print("IF NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
+                                print("IF NO TWEETS FOUND!!!  " + target['target_type'] + " against username " + username)
                                 return None
                         except:
                             print("Something went wrong!!! Resetting target status")
@@ -108,13 +108,13 @@ class Scrapper:
                                     newScrappedTweets = list(filter(lambda x: len(list(filter(lambda y: y['id'] == x['id'], target['tweets']))) == 0, scrappedTweets))
                                     if len(newScrappedTweets) > 0:
                                         result = db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}, '$push': {'tweets': {'$each': newScrappedTweets}}})
-                                        print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['targetType'] + " against username " + username)
+                                        print(f"Scheduled!!! Matched {result.matched_count} documents for  " + target['target_type'] + " against username " + username)
                                         return newScrappedTweets
                                     else:
                                         return None
                             else:
                                 db.targets.update_one({'_id': ObjectId(target['_id'])}, {'$set': {'status': 0}})
-                                print("ELSE NO TWEETS FOUND!!!  " + target['targetType'] + " against username " + username)
+                                print("ELSE NO TWEETS FOUND!!!  " + target['target_type'] + " against username " + username)
                             return None
                         except:
                             print("Something went wrong!!! Resetting target status")

@@ -173,26 +173,20 @@
           <li class="nav-item active">
             <a
               class="nav-link {% if url_for(request.endpoint, **request.view_args) == '/dashboard' %} active {% endif %}"
-              href="{{url_for('getDashboardPage')}}"
+              href="{{url_for('get_dashboard_page')}}"
               >Twitter Engine <span class="sr-only">(current)</span></a
             >
           </li>
+
           <li class="nav-item">
-            <a
-              class="nav-link {% if url_for(request.endpoint, **request.view_args) == '/configurations' %} active {% endif %}"
-              href="{{url_for('getConfigPage')}}"
-              >Configuration</a
-            >
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url_for('getDashboardPage')}}"
+            <a class="nav-link" href="{{url_for('get_dashboard_page')}}"
               >Pricing</a
             >
           </li>
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
-              href="{{url_for('getDashboardPage')}}"
+              href="{{url_for('get_dashboard_page')}}"
               id="navbarDropdownMenuLink"
               data-toggle="dropdown"
               aria-haspopup="true"
@@ -201,13 +195,13 @@
               Dropdown link
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+              <a class="dropdown-item" href="{{url_for('get_dashboard_page')}}"
                 >Action</a
               >
-              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+              <a class="dropdown-item" href="{{url_for('get_dashboard_page')}}"
                 >Another action</a
               >
-              <a class="dropdown-item" href="{{url_for('getDashboardPage')}}"
+              <a class="dropdown-item" href="{{url_for('get_dashboard_page')}}"
                 >Something else here</a
               >
             </div>
@@ -217,7 +211,7 @@
           class="border d-flex flex-row justify-content-center align-items-center"
         >
           <a
-            href="{{url_for('logoutUser')}}"
+            href="{{url_for('logout_user')}}"
             class="btn btn-sm btn-warning my-2 my-sm-0"
             type="button"
             >Logout</a

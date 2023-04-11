@@ -56,21 +56,21 @@
               {% endfor %}
             </div>
             {% endif %} {% endwith %}
-            <form id="register-form" method="POST" action="{{url_for('registerUser')}}">
+            <form id="register-form" method="POST" action="{{url_for('register_user')}}">
               <!-- First Name input -->
               <div class="form-outline mb-4">
                 <input
                   type="text"
                   placeholder="First Name"
-                  name="firstName"
-                  value="{{ request.firstName }}"
+                  name="first_name"
+                  value="{{ request.first_name }}"
                   class="form-control"
                   required
                   autocomplete="off"
                   
 
                 />
-                <label class="form-label" for="firstName">First Name</label>
+                <label class="form-label" for="first_name">First Name</label>
               </div>
 
               <!-- Last Name input -->
@@ -78,13 +78,13 @@
                 <input
                   type="text"
                   placeholder="Last Name"
-                  name="lastName"
-                  value="{{ request.lastName }}"
+                  name="last_name"
+                  value="{{ request.last_name }}"
                   class="form-control"
                   required
                   autocomplete="off"
                 />
-                <label class="form-label" for="lastName">Last Name</label>
+                <label class="form-label" for="last_name">Last Name</label>
               </div>
 
               <!-- Username input -->
@@ -120,13 +120,13 @@
                 <input
                   type="password"
                   placeholder="Confirm Password"
-                  name="confirmPassword"
-                  value="{{ request.confirmPassword }}"
+                  name="confirm_password"
+                  value="{{ request.confirm_password }}"
                   class="form-control"
                   required
                   autocomplete="off"
                 />
-                <label class="form-label" for="confirmPassword"
+                <label class="form-label" for="confirm_password"
                   >Confirm Password</label
                 >
               </div>
